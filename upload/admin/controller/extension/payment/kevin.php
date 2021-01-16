@@ -1,7 +1,7 @@
 <?php
 /*
-* 2020 Kevin payment  for OpenCart v.3.0.x.x  
-* @version 0.1.3.10
+* 2020 Kevin. payment  for OpenCart v.3.0.x.x  
+* @version 0.1.3.13
 *
 * NOTICE OF LICENSE
 *
@@ -9,10 +9,7 @@
 * that is bundled with this package in the file LICENSE.txt.
 * It is also available through the world-wide-web at this URL:
 * http://opensource.org/licenses/afl-3.0.php
-* If you did not receive a copy of the license and are unable to
-* obtain it through the world-wide-web, please send an email
-* to license@prestashop.com so we can send you a copy immediately.
-*
+* 
 *  @author 2020 kevin. <info@getkevin.eu>
 *  @copyright kevin.
 *  @license http://opensource.org/licenses/afl-3.0.php Academic Free License (AFL 3.0)
@@ -46,17 +43,30 @@ class ControllerExtensionPaymentKevin extends Controller {
 		}
 
 		$data['heading_title'] = $this->language->get('heading_title');
+		
+		$this->load->model('localisation/language');
+		
+		$languages = $this->model_localisation_language->getLanguages();
+
+		foreach ($languages as $language) {
+			if (isset($this->error['title' . $language['language_id']])) {
+				$data['error_title'][$language['language_id']] = $this->error['title' . $language['language_id']];
+			} else {
+				$data['error_title'][$language['language_id']] = '';
+			}
+		}
+		/*
+		if (isset($this->error['title'])) {
+			$data['error_title_logo'] = $this->error['title_logo'];
+		} else {
+			$data['error_title_logo'] = '';
+		}
+		*/
 
 		if (isset($this->error['warning'])) {
 			$data['error_warning'] = $this->error['warning'];
 		} else {
 			$data['error_warning'] = '';
-		}
-		
-		if (isset($this->error['title'])) {
-			$data['error_title'] = $this->error['title'];
-		} else {
-			$data['error_title'] = '';
 		}
 
 		if (isset($this->error['client_id'])) {
@@ -77,12 +87,18 @@ class ControllerExtensionPaymentKevin extends Controller {
 			$data['error_client_company'] = '';
 		}
 		
-		if (isset($this->error['client_iban'])) {
-			$data['error_client_iban'] = $this->error['client_iban'];
+		if (isset($this->error['client_iban_empty'])) {
+			$data['error_client_iban_empty'] = $this->error['client_iban_empty'];
 		} else {
-			$data['error_client_iban'] = '';
+			$data['error_client_iban_empty'] = '';
 		}
 
+		if (isset($this->error['client_iban_valid'])) {
+			$data['error_client_iban_valid'] = $this->error['client_iban_valid'];
+		} else {
+			$data['error_client_iban_valid'] = '';
+		}
+		
 		$data['breadcrumbs'] = array();
 
 		$data['breadcrumbs'][] = array(
@@ -320,37 +336,38 @@ class ControllerExtensionPaymentKevin extends Controller {
 
 		foreach ($languages as $language) {
 			if (empty($this->request->post['payment_kevin_title' . $language['language_id']]) && empty($this->request->post['payment_kevin_image'])) {
-				$this->error['title'][$language['language_id']] = $this->language->get('error_title');
+				$this->error['title' . $language['language_id']] = $this->language->get('error_title');
 			}
 		}
+		/*
+		if (empty($this->request->post['payment_kevin_title' . $language['language_id']]) && empty($this->request->post['payment_kevin_image'])) {
+			$this->error['title_logo'] = $this->language->get('error_title_logo');
+		}
+		*/
 
-		if (!$this->request->post['payment_kevin_client_id']) {
+		if (empty($this->request->post['payment_kevin_client_id'])) {
 			$this->error['client_id'] = $this->language->get('error_client_id');
 		}
 
-		if (!$this->request->post['payment_kevin_client_secret']) {
+		if (empty($this->request->post['payment_kevin_client_secret'])) {
 			$this->error['client_secret'] = $this->language->get('error_client_secret');
 		}
 		
-		if (!$this->request->post['payment_kevin_client_company']) {
+		if (empty($this->request->post['payment_kevin_client_company'])) {
 			$this->error['client_company'] = $this->language->get('error_client_company');
 		}
-		
-		if (!$this->request->post['payment_kevin_client_iban']) {	
-			$this->error['client_iban'] = $this->language->get('error_client_iban');
-		}
-		
+	
 		if (!empty($this->request->post['payment_kevin_client_iban'])) {
 			$validate = $this->checkIBAN($this->request->post['payment_kevin_client_iban']);
 			if (!$validate) {
-				$this->error['client_iban'] = $this->language->get('error_client_iban_valid');
+				$this->error['client_iban_valid'] = $this->language->get('error_client_iban_valid');
 			}
 		}
 		
-		if (!$this->error) {
-			return true;
-		} else {
-			return false;
-		}	
+		if (empty($this->request->post['payment_kevin_client_iban'])) {
+			$this->error['client_iban_empty'] = $this->language->get('error_client_iban_empty');
+		}
+		
+		return !$this->error;		
 	}
 }

@@ -1,7 +1,7 @@
 <?php
 /*
 * 2020 Kevin. payment  for OpenCart v.3.0.x.x  
-* @version 0.1.3.10
+* @version 0.1.3.13
 *
 * NOTICE OF LICENSE
 *
@@ -9,10 +9,7 @@
 * that is bundled with this package in the file LICENSE.txt.
 * It is also available through the world-wide-web at this URL:
 * http://opensource.org/licenses/afl-3.0.php
-* If you did not receive a copy of the license and are unable to
-* obtain it through the world-wide-web, please send an email
-* to license@prestashop.com so we can send you a copy immediately.
-*
+* 
 *  @author 2020 kevin. <info@getkevin.eu>
 *  @copyright kevin.
 *  @license http://opensource.org/licenses/afl-3.0.php Academic Free License (AFL 3.0)
@@ -59,12 +56,12 @@ $_['entry_sort_order']             = 'Eilės tvarka:';
 
 // Error
 $_['error_permission']             = 'Įspėjimas: Jūs neturite leidimo redaguoti mokėjimo modulio Kevin!';
-$_['error_client_id']              = 'Kliento Id būtinas!';
-$_['error_client_secret']          = 'Kliento slaptas kodas būtinas!';
-$_['error_client_company']         = 'Kliento įmonės pavadinimas būtinas!';
-$_['error_client_iban']            = 'Kliento sąskaitos Nr. būtinas!';
+$_['error_client_id']              = 'Kliento Id privalomas!';
+$_['error_client_secret']          = 'Kliento slaptas kodas privalomas!';
+$_['error_client_company']         = 'Kliento įmonės pavadinimas privalomas!';
+$_['error_client_iban_empty']      = 'Kliento sąskaitos Nr. privalomas!';
 $_['error_client_iban_valid']      = 'Kliento sąskaitos Nr. Negalioja!';
-$_['error_title']                  = 'Mokėjimo būdo pavadinimas, arba banko logo būtinas!';
+$_['error_title']                  = 'Mokėjimo būdo pavadinimas, arba banko logotipas privalomas!';
 
 // Help
 $_['help_iban_format']             = 'Sąskaitos Nr. formatas Lietuvai turi būti dvi raidės ir 18 skaičių. Pvz: LT599386327515536498.';

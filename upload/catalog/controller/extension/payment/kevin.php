@@ -1,7 +1,7 @@
 <?php
 /*
 * 2020 Kevin. payment  for OpenCart v.3.0.x.x  
-* @version 0.1.3.10
+* @version 0.1.3.13
 *
 * NOTICE OF LICENSE
 *
@@ -9,10 +9,7 @@
 * that is bundled with this package in the file LICENSE.txt.
 * It is also available through the world-wide-web at this URL:
 * http://opensource.org/licenses/afl-3.0.php
-* If you did not receive a copy of the license and are unable to
-* obtain it through the world-wide-web, please send an email
-* to license@prestashop.com so we can send you a copy immediately.
-*
+* 
 *  @author 2020 kevin. <info@getkevin.eu>
 *  @copyright kevin.
 *  @license http://opensource.org/licenses/afl-3.0.php Academic Free License (AFL 3.0)
@@ -106,8 +103,11 @@ class ControllerExtensionPaymentKevin extends Controller {
 		date_default_timezone_set('Europe/Vilnius');
 		if (isset($this->request->post['bank'])) {
 			$bank_id = $this->request->post['bank'];
+		} else if (isset($this->request->get['bank'])) {
+			$bank_id = $this->request->get['bank'];
 		} else {
 			$bank_id = '';
+			$this->session->data['error'] = "Bank ID is missing! Please try again, or choose another payment method.";
 			$this->response->redirect($this->url->link('checkout/cart'));
 		}
 
@@ -269,7 +269,7 @@ class ControllerExtensionPaymentKevin extends Controller {
 		}
 
 		if (!$new_status_id) {
-			$this->session->data['error'] = 'An error occurred. On response not received any status group.';
+			$this->session->data['error'] = 'An error occurred. On response not received any status group.' . $get_payment_status['error']['code'] . ' ' . $get_payment_status['error']['description'];
 			$this->response->redirect($this->url->link('checkout/cart'));
 		}
 		
@@ -297,7 +297,7 @@ class ControllerExtensionPaymentKevin extends Controller {
 				$this->model_checkout_order->addOrderHistory($order_id, $order_status_id, '', true);
 			}
 			$this->session->data['order_id'] = $order_id;
-			$this->response->redirect($this->url->link('checkout/success', '', true));
+			$this->response->redirect($this->url->link('checkout/success'));
 		} else if ($new_status == 'pending') {
 			unset($this->session->data['new_order_id']);
 			$order_status_id = $this->config->get('payment_kevin_pending_status_id');
@@ -305,7 +305,7 @@ class ControllerExtensionPaymentKevin extends Controller {
 				$this->model_checkout_order->addOrderHistory($order_id, $order_status_id, '', true);
 			}
 			$this->session->data['order_id'] = $order_id;
-			$this->response->redirect($this->url->link('checkout/success', '', true));
+			$this->response->redirect($this->url->link('checkout/success'));
         } else if ($new_status == 'failed') {
 			unset($this->session->data['new_order_id']);
 			$order_status_id = $this->config->get('payment_kevin_failed_status_id');
@@ -313,10 +313,10 @@ class ControllerExtensionPaymentKevin extends Controller {
 				$this->model_checkout_order->addOrderHistory($order_id, $order_status_id, '', true);
 			}
 			$this->session->data['order_id'] = $order_id;
-			$this->response->redirect($this->url->link('checkout/failure', '', true));
+			$this->response->redirect($this->url->link('checkout/failure'));
         } else {
 			unset($this->session->data['new_order_id']);
-			$this->session->data['error'] = $this->language->get('error_kevin_payment');
+			$this->session->data['error'] = $this->language->get('error_kevin_payment') . $get_payment_status['error']['code'] . ' ' . $get_payment_status['error']['description'];
 			$this->response->redirect($this->url->link('checkout/cart'));
 		}
     }
@@ -327,6 +327,8 @@ class ControllerExtensionPaymentKevin extends Controller {
         $this->load->model('checkout/order');
         $this->load->model('extension/payment/kevin');
 		unset($this->session->data['new_order_id']);
+		sleep(10);
+		
 		$get_payment_status = json_decode(file_get_contents('php://input'), 1);
 		
 		$payment_id = $get_payment_status['id'];
@@ -380,17 +382,17 @@ class ControllerExtensionPaymentKevin extends Controller {
 			$order_status_id = $this->config->get('payment_kevin_completed_status_id');
 			$this->model_checkout_order->addOrderHistory($order_id, $order_status_id, '', true);
 			$this->session->data['order_id'] = $order_id;
-			$this->response->redirect($this->url->link('checkout/success', '', true));
+			$this->response->redirect($this->url->link('checkout/success'));
 		} else if ($new_status == 'pending' && $payment_status) {
 			$order_status_id = $this->config->get('payment_kevin_pending_status_id');
 			$this->model_checkout_order->addOrderHistory($order_id, $order_status_id, '', true);
 			$this->session->data['order_id'] = $order_id;
-			$this->response->redirect($this->url->link('checkout/success', '', true));
+			$this->response->redirect($this->url->link('checkout/success'));
         } else if ($new_status == 'failed' && $payment_status) {
 			$order_status_id = $this->config->get('payment_kevin_failed_status_id');
 			$this->model_checkout_order->addOrderHistory($order_id, $order_status_id, '', true);
 			$this->session->data['order_id'] = $order_id;
-			$this->response->redirect($this->url->link('checkout/failure', '', true));	
+			$this->response->redirect($this->url->link('checkout/failure'));	
 		} 
     }
 		

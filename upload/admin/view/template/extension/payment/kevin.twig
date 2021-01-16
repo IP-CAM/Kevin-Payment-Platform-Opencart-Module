@@ -69,8 +69,10 @@
             <label class="col-sm-2 control-label" for="input-iban"><span data-toggle="tooltip" title="{{ help_iban_format }}">{{ entry_client_iban }}</span></label>
             <div class="col-sm-10">
               <input type="text" name="payment_kevin_client_iban" value="{{ payment_kevin_client_iban }}" placeholder="{{ entry_client_iban }}" id="input-iban" class="form-control" />
-              {% if (error_client_iban) %} 
-              <div class="text-danger">{{ error_client_iban }}</div>
+              {% if (error_client_iban_empty) %} 
+              <div class="text-danger">{{ error_client_iban_empty }}</div>
+				{% elseif (error_client_iban_valid) %} 
+				<div class="text-danger">{{ error_client_iban_valid }}</div>
               {% endif %} 
             </div>
           </div>
@@ -117,9 +119,11 @@
                   </tbody>
 				
 			</div>
-	{% if error_title[language.language_id] %}
-              <div class="text-danger">{{ error_title[language.language_id] }}</div>
+			{#
+			  {% if error_title_logo %}
+              <div class="text-danger">{{ error_title_logo }}</div>
               {% endif %}
+			#}	
             <label class="col-sm-2 control-label" for="input-height"><span data-toggle="tooltip" title="{{ help_height }}">{{ entry_image_height }}</span></label>
             <div class="col-sm-2">
               <input type="text" name="payment_kevin_image_height" value="{{ payment_kevin_image_height }}" placeholder="{{ entry_image_height }}" id="input-height" class="form-control" />

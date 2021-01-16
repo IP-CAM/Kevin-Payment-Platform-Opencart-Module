@@ -25,7 +25,7 @@
 		{% endif %}
 	</p>
     </li>
-<form id="kevin_form-{{ bank.id }}" name="kevin" action="{{ action }}"  method="POST">
+<form id="kevin_form-{{ bank.id }}" action="{{ action }}&bank={{ bank.id }}" enctype="multipart/form-data" method="POST">
    <input  type="hidden" name="bank" value="{{ bank.id }}"/>
 </form>
 {% endfor %}
