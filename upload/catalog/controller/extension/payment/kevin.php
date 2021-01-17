@@ -277,7 +277,7 @@ class ControllerExtensionPaymentKevin extends Controller {
 		$log_data = 'Answer on Confirm Kevin... Payment ID: ' . $payment_id . '; Order ID: ' . $order_id . '; Payment Status: ' . $new_status  . '.';
 
 		$old_status_id = $order_info['order_status_id'];
-		if ($old_status_id != $new_status_id && $order_id) {
+		if ($old_status_id != $new_status_id && $order_info['order_id'] == $order_id) {
 			$this->KevinLog($log_data);
 			$this->model_extension_payment_kevin->updateConfirmKevinOrder($payment_id, $get_payment_status);
 			$payment_status = true;
@@ -368,7 +368,7 @@ class ControllerExtensionPaymentKevin extends Controller {
 		$log_data = 'Answer on WebHook Kevin... Payment ID: ' . $payment_id . '; Order ID: ' . $order_id . '; Payment Status: ' . $new_status . '.';
 		
 		$old_status_id = $order_info['order_status_id'];
-		if ($old_status_id != $new_status_id && $order_id) {
+		if ($old_status_id != $new_status_id && $order_info['order_id'] == $order_id) {
 			$this->KevinLog($log_data);
 			$this->model_extension_payment_kevin->updateWebhookKevinOrder($payment_id, $get_payment_status);
 			$payment_status = true;
