@@ -217,7 +217,7 @@ class ControllerExtensionPaymentKevin extends Controller {
         $this->language->load('extension/payment/kevin');
         $this->load->model('checkout/order');
         $this->load->model('extension/payment/kevin');
-		sleep(10);
+		
 		if (isset($this->request->get['paymentId'])) {
             $payment_id = $this->request->get['paymentId'];
         } elseif (isset($_POST['paymentId'])) {
