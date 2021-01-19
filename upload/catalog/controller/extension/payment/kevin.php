@@ -42,7 +42,9 @@ class ControllerExtensionPaymentKevin extends Controller {
 			$order_info['currency_value'] = 1;
 		}
 		
-		$total = $this->currency->format($order_info['total'], $order_info['currency_code'], $order_info['currency_value']);
+		$total = $this->currency->format($order_info['total'], $order_info['currency_code'], $order_info['currency_value'], false, false);
+		
+		//$this->model_extension_payment_kevin->addKevinOrder($order_info, $total);
 		
 		$data['kevin_instr_title'] = $this->config->get('payment_kevin_ititle' . $current_language);
 	//	$data['kevin_instr'] =  html_entity_decode($this->config->get('payment_kevin_instruction' . $current_language));
@@ -63,6 +65,10 @@ class ControllerExtensionPaymentKevin extends Controller {
 		$country_code = ['countryCode' => $current_country_code];
 		
 		$banks = $kevinClient->auth()->getBanks($country_code);
+		
+		if (isset($banks['error']['code'])) {
+			$data['error_bank_missing'] = $banks['error']['description'] . ' Error code: ' . $banks['error']['code'] . '. Please try another payment method.';
+		}
 
 		$bank_ids = array();
 
@@ -75,9 +81,11 @@ class ControllerExtensionPaymentKevin extends Controller {
 		}
 
 		$data['banks'] = $banks['data'];
-		
+	//	echo '<pre>';	print_r($banks); echo '</pre>';
 		$data['action'] = $this->url->link('extension/payment/kevin/redirect');
 		$data['bank_name_enable'] = $this->config->get('payment_kevin_bank_name_enabled');
+		
+		
 		
         $order_id = $order_info['order_id'];
         $currency = $order_info['currency_code'];
@@ -122,6 +130,18 @@ class ControllerExtensionPaymentKevin extends Controller {
 
 		$order_info = $this->model_checkout_order->getOrder($this->session->data['order_id']);
 		
+		if (!$order_info) {
+			$this->KevinLog('Order ID: ' . $this->session->data['order_id'] . ' missing in DB. ');
+			$this->session->data['error'] = 'Order ID: ' . $this->session->data['order_id'] . ' missing in database. If you want to order the desired products, please try again.';
+			unset($this->session->data['order_id']);
+			$this->response->redirect($this->url->link('checkout/cart'));
+		}
+				
+		$ip_address = $order_info['ip'];
+
+	//	echo '<pre>id:';	print_r($order_info['order_id']); echo '</pre>'; die;
+		$order_id = (int)$order_info['order_id'];
+		
 		if(!$order_info) {
 			$order_info['total'] = 0;
 			$order_info['currency_code'] = $this->config->get('config_currency');
@@ -129,9 +149,8 @@ class ControllerExtensionPaymentKevin extends Controller {
 		}
 		
 		$total = $this->currency->format($order_info['total'], $order_info['currency_code'], $order_info['currency_value'], false, false);
-	//	echo '<pre>';	print_r($total); echo '</pre>'; die;
-		$order_id = (int)$order_info['order_id'];
-		
+	
+			
 		// Vendor logo can be added to the payment confirmation, if Kevin API will support it.
         if ($this->config->get('config_logo') && file_exists(DIR_IMAGE . $this->config->get('config_logo'))) {
             $vendor_logo = $this->config->get('config_url') . 'image/' . $this->config->get('config_logo') . ' ';
@@ -164,22 +183,20 @@ class ControllerExtensionPaymentKevin extends Controller {
 		];
 		
 		$init_payment = $kevinClient->payment()->initPayment($payment_attr);
-		
-		$ip_address = $order_info['ip'];
-		
+
 		//echo '<pre>';	print_r($init_payment); echo '</pre>'; die;
 		
 		if (!empty($init_payment['id'])) {
 			$payment_id = $init_payment['id'];
 		} else {
-			$log_data = 'Answer on Redirect Kevin...'  . $init_payment['error']['description'] . ': '  . $init_payment['error']['code'] . '.';
+			$log_data = 'Answer on Redirect Kevin... '  . $init_payment['error']['description'] . ': '  . $init_payment['error']['code'] . '.';
 			$this->KevinLog($log_data);
 			$this->session->data['error'] = $this->language->get('error_kevin_payment') . ' Code: '. $init_payment['error']['code'];
 			$this->response->redirect($this->url->link('checkout/cart'));
 			$payment_id = 0;
 		}
 	
-		$this->model_extension_payment_kevin->addKevinOrder($order_info, $init_payment, $ip_address);
+		$this->model_extension_payment_kevin->addKevinOrder($order_info, $init_payment, $ip_address, $total);
 
 		$get_payment_attr = ['PSU-IP-Address' => $ip_address];
 		$get_payment = $kevinClient->payment()->getPayment($payment_id, $get_payment_attr);
@@ -205,7 +222,7 @@ class ControllerExtensionPaymentKevin extends Controller {
 		//date_default_timezone_set('Europe/Vilnius');
 		unset($this->session->data['order_id']);
 		unset($this->session->data['error']);
-		
+
 		require_once dirname(dirname(dirname(__DIR__))) . '/model/extension/payment/kevin/vendor/autoload.php';
 		
 		$clientId = $this->config->get('payment_kevin_client_id');
@@ -217,7 +234,7 @@ class ControllerExtensionPaymentKevin extends Controller {
         $this->language->load('extension/payment/kevin');
         $this->load->model('checkout/order');
         $this->load->model('extension/payment/kevin');
-		
+
 		if (isset($this->request->get['paymentId'])) {
             $payment_id = $this->request->get['paymentId'];
         } elseif (isset($_POST['paymentId'])) {
@@ -287,32 +304,26 @@ class ControllerExtensionPaymentKevin extends Controller {
 		} else {
 			$payment_status = false;
 		}
-
-        $data['language'] = $this->language->get('code');
-
-        $order_status_id = $this->config->get('order_status_id');
         
 		/*validate order*/
+
         if ($new_status == 'completed') {
             $order_status_id = $this->config->get('payment_kevin_completed_status_id');
 			if ($payment_status) {
 				$this->model_checkout_order->addOrderHistory($order_id, $order_status_id, '', true);
 			}
-			$this->session->data['order_id'] = $order_id;
 			$this->response->redirect($this->url->link('checkout/success'));
 		} else if ($new_status == 'pending') {
 			$order_status_id = $this->config->get('payment_kevin_pending_status_id');
 			if ($payment_status) {
 				$this->model_checkout_order->addOrderHistory($order_id, $order_status_id, '', true);
 			}
-			$this->session->data['order_id'] = $order_id;
 			$this->response->redirect($this->url->link('checkout/success'));
         } else if ($new_status == 'failed') {
 			$order_status_id = $this->config->get('payment_kevin_failed_status_id');
 			if ($payment_status) {
 				$this->model_checkout_order->addOrderHistory($order_id, $order_status_id, '', true);
 			}
-			$this->session->data['order_id'] = $order_id;
 			$this->response->redirect($this->url->link('checkout/failure'));
         } else {
 			$this->session->data['error'] = $this->language->get('error_kevin_payment') . $get_payment_status['error']['code'] . ' ' . $get_payment_status['error']['description'];
@@ -322,12 +333,9 @@ class ControllerExtensionPaymentKevin extends Controller {
 
     public function webhook() {
 		//date_default_timezone_set('Europe/Vilnius');
-		unset($this->session->data['order_id']);
-		
         $this->language->load('extension/payment/kevin');
         $this->load->model('checkout/order');
         $this->load->model('extension/payment/kevin');
-	//	sleep(10);
 		
 		$get_payment_status = json_decode(file_get_contents('php://input'), 1);
 		
@@ -364,7 +372,6 @@ class ControllerExtensionPaymentKevin extends Controller {
         }
 		
 		$order_info = $this->model_checkout_order->getOrder($order_id);
-		$this->session->data['order_id'] = $order_id;
 		
 		$log_data = 'Answer on WebHook Kevin... Payment ID: ' . $payment_id . '; Order ID: ' . $order_id . '; Payment Status: ' . $new_status . '.';
 		
@@ -377,20 +384,15 @@ class ControllerExtensionPaymentKevin extends Controller {
 			$payment_status = false;
 		}
 
-        $data['language'] = $this->language->get('code');
-
 		if  ($new_status == 'completed' && $payment_status){
 			$order_status_id = $this->config->get('payment_kevin_completed_status_id');
 			$this->model_checkout_order->addOrderHistory($order_id, $order_status_id, '', true);
-			$this->response->redirect($this->url->link('checkout/success'));
 		} else if ($new_status == 'pending' && $payment_status) {
 			$order_status_id = $this->config->get('payment_kevin_pending_status_id');
 			$this->model_checkout_order->addOrderHistory($order_id, $order_status_id, '', true);
-			$this->response->redirect($this->url->link('checkout/success'));
         } else if ($new_status == 'failed' && $payment_status) {
 			$order_status_id = $this->config->get('payment_kevin_failed_status_id');
-			$this->model_checkout_order->addOrderHistory($order_id, $order_status_id, '', true);
-			$this->response->redirect($this->url->link('checkout/failure'));	
+			$this->model_checkout_order->addOrderHistory($order_id, $order_status_id, '', true);	
 		} 
     }
 		

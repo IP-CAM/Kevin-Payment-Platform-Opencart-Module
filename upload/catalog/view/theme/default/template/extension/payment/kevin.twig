@@ -12,7 +12,9 @@
 <div class="alert-currency"></div>  
 {% endif %}
 <div class="alert-bank"></div> 
-
+{% if error_bank_missing %} 	
+<div class="alert alert-danger"><i class="fa fa-exclamation-circle"></i> {{ error_bank_missing }}<button type="button" class="close" data-dismiss="alert">&times;</button></div>
+{% endif %}	
 <div class="bank-container">
 	
 <ul class="list-unstyled row li-grid"> 
