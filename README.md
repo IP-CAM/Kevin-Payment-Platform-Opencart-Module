@@ -4,7 +4,7 @@
 
 ## Prerequisites
 
-- OpenCart 3.0.x.x
+- OpenCart 2.3.x.x
 - PHP 5.6 or later
 
 ## Support
