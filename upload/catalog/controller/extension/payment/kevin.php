@@ -33,6 +33,7 @@ class ControllerExtensionPaymentKevin extends Controller {
         $this->load->model('extension/payment/kevin');
         $this->load->language('extension/payment/kevin');
 		$this->load->model('localisation/language');
+		
 		$current_language = $this->config->get('config_language_id');
 
         $order_info = $this->model_checkout_order->getOrder($this->session->data['order_id']);
@@ -294,7 +295,7 @@ class ControllerExtensionPaymentKevin extends Controller {
 		}
 		
 		/*log*/
-		$log_data = 'Answer on Confirm Kevin... Payment ID: ' . $payment_id . '; Order ID: ' . $order_id . '; Payment Status: ' . $new_status  . '.';
+		$log_data = 'Answer on Confirm Kevin... Payment ID: ' . $payment_id . '; Order ID: ' . $order_info['order_id'] . '; Payment Status: ' . $new_status  . '.';
 
 		$old_status_id = $order_info['order_status_id'];
 		if ($old_status_id != $new_status_id && $order_info['order_id'] == $order_id) {
@@ -373,7 +374,7 @@ class ControllerExtensionPaymentKevin extends Controller {
 		
 		$order_info = $this->model_checkout_order->getOrder($order_id);
 		
-		$log_data = 'Answer on WebHook Kevin... Payment ID: ' . $payment_id . '; Order ID: ' . $order_id . '; Payment Status: ' . $new_status . '.';
+		$log_data = 'Answer on WebHook Kevin... Payment ID: ' . $payment_id . '; Order ID: ' . $order_info['order_id'] . '; Payment Status: ' . $new_status . '.';
 		
 		$old_status_id = $order_info['order_status_id'];
 		if ($old_status_id != $new_status_id && $order_info['order_id'] == $order_id) {
