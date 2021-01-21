@@ -1,7 +1,7 @@
 <?php
 /*
 * 2020 Kevin. payment  for OpenCart v.3.0.x.x  
-* @version 0.1.3.13
+* @version 0.1.3.15
 *
 * NOTICE OF LICENSE
 *
@@ -17,7 +17,7 @@
 class ModelExtensionPaymentKevin extends Model {
 	
 	public function uninstall(){  
-		$this->db->query("DROP TABLE IF EXISTS `" . DB_PREFIX . "kevin_order`;");	
+	//	$this->db->query("DROP TABLE IF EXISTS `" . DB_PREFIX . "kevin_order` ");	
 	}
     
 	public function install(){  

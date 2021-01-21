@@ -1,7 +1,7 @@
 <?php
 /*
 * 2020 Kevin. payment  for OpenCart v.3.0.x.x  
-* @version 0.1.3.13
+* @version 0.1.3.15
 *
 * NOTICE OF LICENSE
 *
@@ -20,12 +20,12 @@ class ControllerExtensionPaymentKevin extends Controller {
 		$this->load->model('extension/payment/kevin');
 		$this->model_extension_payment_kevin->install();
 	}
-
+/*
 	public function uninstall(){
 		$this->load->model('extension/payment/kevin');
-		$this->model_extension_payment_kevin->uninstall();
+	//	$this->model_extension_payment_kevin->uninstall();
 	}
-	
+*/	
 	public function index() {
 
         $this->load->language('extension/payment/kevin');
