@@ -142,6 +142,7 @@ class ControllerExtensionPaymentKevin extends Controller {
 
 	//	echo '<pre>id:';	print_r($order_info['order_id']); echo '</pre>'; die;
 		$order_id = (int)$order_info['order_id'];
+		$order_status_id = $order_info['order_status_id'];
 		
 		if(!$order_info) {
 			$order_info['total'] = 0;
@@ -197,7 +198,7 @@ class ControllerExtensionPaymentKevin extends Controller {
 			$payment_id = 0;
 		}
 	
-		$this->model_extension_payment_kevin->addKevinOrder($order_info, $init_payment, $ip_address, $total);
+		$this->model_extension_payment_kevin->addKevinOrder($order_info, $init_payment, $ip_address, $order_status_id, $total);
 
 		$get_payment_attr = ['PSU-IP-Address' => $ip_address];
 		$get_payment = $kevinClient->payment()->getPayment($payment_id, $get_payment_attr);
@@ -221,7 +222,6 @@ class ControllerExtensionPaymentKevin extends Controller {
 
     public function confirm() {
 		//date_default_timezone_set('Europe/Vilnius');
-		//unset($this->session->data['order_id']);
 		unset($this->session->data['error']);
 
 		require_once dirname(dirname(dirname(__DIR__))) . '/model/extension/payment/kevin/vendor/autoload.php';
@@ -255,6 +255,7 @@ class ControllerExtensionPaymentKevin extends Controller {
 	
         if ($order_query) {
             $order_id = $order_query['order_id'];
+			$old_status_id = $order_query['order_status_id'];
         } else {
             $order_id = 0;
 			$this->session->data['error'] = 'An error occurred. Order Session have been ended! Please try again.';
@@ -263,7 +264,6 @@ class ControllerExtensionPaymentKevin extends Controller {
         }
 		
 		$order_info = $this->model_checkout_order->getOrder($order_id);
-		//$this->session->data['order_id'] = $order_id;
 		
 		$ip_address = $order_info['ip'];
 		$payment_status_attr = ['PSU-IP-Address' => $ip_address];
@@ -299,11 +299,10 @@ class ControllerExtensionPaymentKevin extends Controller {
 		
 		/*log*/
 		$log_data = 'Answer on Confirm Kevin... Payment ID: ' . $payment_id . '; Order ID: ' . $order_info['order_id'] . '; Payment Status: ' . $new_status  . '.';
-
-		$old_status_id = $order_info['order_status_id'];
+		
 		if ($old_status_id != $new_status_id && $order_info['order_id'] == $this->session->data['order_id']) {
 			$this->KevinLog($log_data);
-			$this->model_extension_payment_kevin->updateConfirmKevinOrder($payment_id, $get_payment_status);
+			$this->model_extension_payment_kevin->updateConfirmKevinOrder($payment_id, $get_payment_status, $new_status_id);
 			$payment_status = true;
 		} else {
 			$payment_status = false;
@@ -378,6 +377,7 @@ class ControllerExtensionPaymentKevin extends Controller {
 	
         if ($order_query) {
             $order_id = $order_query['order_id'];
+			$old_status_id = $order_query['order_status_id'];
         } else {
             $order_id = 0;
 			$this->KevinLog('An error occurred. The order have been dleted from database.');
@@ -388,10 +388,11 @@ class ControllerExtensionPaymentKevin extends Controller {
 		
 		$log_data = 'Answer on WebHook Kevin... Payment ID: ' . $payment_id . '; Order ID: ' . $order_info['order_id'] . '; Payment Status: ' . $new_status . '.';
 		
-		$old_status_id = $order_info['order_status_id'];
+		//$old_status_id = $order_info['order_status_id'];
+		
 		if ($old_status_id != $new_status_id && $order_info['order_id'] == $order_id) {
 			$this->KevinLog($log_data);
-			$this->model_extension_payment_kevin->updateWebhookKevinOrder($payment_id, $get_payment_status);
+			$this->model_extension_payment_kevin->updateWebhookKevinOrder($payment_id, $get_payment_status, $new_status_id);
 			$payment_status = true;
 		} else {
 			$payment_status = false;
@@ -400,12 +401,15 @@ class ControllerExtensionPaymentKevin extends Controller {
 		if  ($new_status == 'completed' && $payment_status){
 			$order_status_id = $this->config->get('payment_kevin_completed_status_id');
 			$this->model_checkout_order->addOrderHistory($order_id, $order_status_id, '', true);
+			
 		} else if ($new_status == 'pending' && $payment_status) {
 			$order_status_id = $this->config->get('payment_kevin_pending_status_id');
 			$this->model_checkout_order->addOrderHistory($order_id, $order_status_id, '', true);
+
         } else if ($new_status == 'failed' && $payment_status) {
 			$order_status_id = $this->config->get('payment_kevin_failed_status_id');
-			$this->model_checkout_order->addOrderHistory($order_id, $order_status_id, '', true);	
+			$this->model_checkout_order->addOrderHistory($order_id, $order_status_id, '', true);
+
 		} 
     }
 		
