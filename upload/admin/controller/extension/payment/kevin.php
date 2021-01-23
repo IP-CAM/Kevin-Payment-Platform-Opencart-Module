@@ -1,7 +1,7 @@
 <?php
 /*
-* 2020 Kevin. payment  for OpenCart v.3.0.x.x  
-* @version 0.1.3.13
+* 2020 Kevin payment  for OpenCart v.2.3.x.x  
+* @version 0.1.2.3
 *
 * NOTICE OF LICENSE
 *
@@ -20,12 +20,12 @@ class ControllerExtensionPaymentKevin extends Controller {
 		$this->load->model('extension/payment/kevin');
 		$this->model_extension_payment_kevin->install();
 	}
-
+/*
 	public function uninstall(){
 		$this->load->model('extension/payment/kevin');
 		$this->model_extension_payment_kevin->uninstall();
 	}
-	
+*/	
 	public function index() {
 
         $this->load->language('extension/payment/kevin');
@@ -35,14 +35,74 @@ class ControllerExtensionPaymentKevin extends Controller {
 		$this->load->model('setting/setting');
 
 		if (($this->request->server['REQUEST_METHOD'] == 'POST') && $this->validate()) {
-			$this->model_setting_setting->editSetting('payment_kevin', $this->request->post);				
+			$this->model_setting_setting->editSetting('kevin', $this->request->post);				
 
 			$this->session->data['success'] = $this->language->get('text_success');
 
-			$this->response->redirect($this->url->link('marketplace/extension', 'user_token=' . $this->session->data['user_token'] . '&type=payment', true));
+			$this->response->redirect($this->url->link('extension/extension', 'token=' . $this->session->data['token'] . '&type=payment', true));
 		}
-
+		
 		$data['heading_title'] = $this->language->get('heading_title');
+		
+		$texts = array(
+			'text_payment',
+			'text_edit',
+			'text_extension',
+			'text_success',
+			'text_kevin',
+			'text_right',
+			'text_left',
+			'text_disabled',
+			'text_enabled',
+			'text_all_zones',
+			'entry_general',
+			'entry_order_statuses',
+			'entry_instructions',
+			'entry_client_id',
+			'entry_client_secret',
+			'entry_client_company',
+			'entry_client_iban',
+			'entry_redirect_preferred',
+			'entry_image',
+			'entry_image_height',
+			'entry_image_width',
+			'entry_position',
+			'entry_bank_name_enabled',
+			'entry_kevin_title',
+			'entry_instruction_title',
+			'entry_kevin_instruction',
+			'entry_total',
+			'entry_order_status',
+			'entry_started_status',
+			'entry_completed_status',
+			'entry_pending_status',
+			'entry_failed_status',
+			'entry_geo_zone',
+			'entry_status',
+			'entry_log',
+			'entry_sort_order',
+			'error_permission',
+			'error_client_id',
+			'error_client_secret',
+			'error_client_company',
+			'error_client_iban',
+			'error_client_iban_valid',
+			'error_title',
+			'help_iban_format',
+			'help_bank_name_enbl',
+			'help_bank_title',
+			'help_total',
+			'help_log',
+			'help_width',
+			'help_height',
+			'help_position',
+			'button_cancel',
+			'button_save'
+		);
+		
+		foreach ($texts as $text) {
+			$data[$text] = $this->language->get($text);
+		}
 		
 		$this->load->model('localisation/language');
 		
@@ -50,25 +110,18 @@ class ControllerExtensionPaymentKevin extends Controller {
 
 		foreach ($languages as $language) {
 			if (isset($this->error['title' . $language['language_id']])) {
-				$data['error_title'][$language['language_id']] = $this->error['title' . $language['language_id']];
+				$data['error_title' . $language['language_id']] = $this->error['title' . $language['language_id']];
 			} else {
-				$data['error_title'][$language['language_id']] = '';
+				$data['error_title' . $language['language_id']] = '';
 			}
 		}
-		/*
-		if (isset($this->error['title'])) {
-			$data['error_title_logo'] = $this->error['title_logo'];
-		} else {
-			$data['error_title_logo'] = '';
-		}
-		*/
 
 		if (isset($this->error['warning'])) {
 			$data['error_warning'] = $this->error['warning'];
 		} else {
 			$data['error_warning'] = '';
 		}
-
+	
 		if (isset($this->error['client_id'])) {
 			$data['error_client_id'] = $this->error['client_id'];
 		} else {
@@ -92,7 +145,7 @@ class ControllerExtensionPaymentKevin extends Controller {
 		} else {
 			$data['error_client_iban_empty'] = '';
 		}
-
+		
 		if (isset($this->error['client_iban_valid'])) {
 			$data['error_client_iban_valid'] = $this->error['client_iban_valid'];
 		} else {
@@ -103,154 +156,150 @@ class ControllerExtensionPaymentKevin extends Controller {
 
 		$data['breadcrumbs'][] = array(
 			'text' => $this->language->get('text_home'),
-			'href' => $this->url->link('common/dashboard', 'user_token=' . $this->session->data['user_token'], true)
+			'href' => $this->url->link('common/dashboard', 'token=' . $this->session->data['token'], true)
 		);
 
 		$data['breadcrumbs'][] = array(
 			'text' => $this->language->get('text_extension'),
-			'href' => $this->url->link('marketplace/extension', 'user_token=' . $this->session->data['user_token'] . '&type=payment', true)
+			'href' => $this->url->link('extension/extension', 'token=' . $this->session->data['token'] . '&type=payment', true)
 		);
 
 		$data['breadcrumbs'][] = array(
 			'text' => $this->language->get('heading_title'),
-			'href' => $this->url->link('extension/payment/kevin', 'user_token=' . $this->session->data['user_token'], true)
+			'href' => $this->url->link('extension/payment/kevin', 'token=' . $this->session->data['token'], true)
 		);
 
-		$data['action'] = $this->url->link('extension/payment/kevin', 'user_token=' . $this->session->data['user_token'], true);
+		$data['action'] = $this->url->link('extension/payment/kevin', 'token=' . $this->session->data['token'], true);
 
-		$data['cancel'] = $this->url->link('marketplace/extension', 'user_token=' . $this->session->data['user_token'] . '&type=payment', true);
+		$data['cancel'] = $this->url->link('extension/extension', 'token=' . $this->session->data['token'] . '&type=payment', true);
 
-		if (isset($this->request->post['payment_kevin_client_id'])) {
-			$data['payment_kevin_client_id'] = $this->request->post['payment_kevin_client_id'];
+		if (isset($this->request->post['kevin_client_id'])) {
+			$data['kevin_client_id'] = $this->request->post['kevin_client_id'];
 		} else {
-			$data['payment_kevin_client_id'] = $this->config->get('payment_kevin_client_id');
+			$data['kevin_client_id'] = $this->config->get('kevin_client_id');
 		}
 		
-		if (isset($this->request->post['payment_kevin_client_secret'])) {
-			$data['payment_kevin_client_secret'] = $this->request->post['payment_kevin_client_secret'];
+		if (isset($this->request->post['kevin_client_secret'])) {
+			$data['kevin_client_secret'] = $this->request->post['kevin_client_secret'];
 		} else {
-			$data['payment_kevin_client_secret'] = $this->config->get('payment_kevin_client_secret');
+			$data['kevin_client_secret'] = $this->config->get('kevin_client_secret');
 		}
 		
-		if (isset($this->request->post['payment_kevin_client_company'])) {
-			$data['payment_kevin_client_company'] = $this->request->post['payment_kevin_client_company'];
+		if (isset($this->request->post['kevin_client_company'])) {
+			$data['kevin_client_company'] = $this->request->post['kevin_client_company'];
 		} else {
-			$data['payment_kevin_client_company'] = $this->config->get('payment_kevin_client_company');
+			$data['kevin_client_company'] = $this->config->get('kevin_client_company');
 		}
 		
-		if (isset($this->request->post['payment_kevin_client_iban'])) {
-			$data['payment_kevin_client_iban'] = $this->request->post['payment_kevin_client_iban'];
-		} else if (!empty($this->config->get('payment_kevin_client_iban'))){
-			$data['payment_kevin_client_iban'] = $this->config->get('payment_kevin_client_iban');
+		if (isset($this->request->post['kevin_client_iban'])) {
+			$data['kevin_client_iban'] = $this->request->post['kevin_client_iban'];
+		} else if (!empty($this->config->get('kevin_client_iban'))){
+			$data['kevin_client_iban'] = $this->config->get('kevin_client_iban');
 		} else {
-			$data['payment_kevin_client_iban'] = '';
+			$data['kevin_client_iban'] = '';
 		}
 		
-		if (isset($this->request->post['payment_kevin_redirect_preferred'])) {
-			$data['payment_kevin_redirect_preferred'] = $this->request->post['payment_kevin_redirect_preferred'];
+		if (isset($this->request->post['kevin_redirect_preferred'])) {
+			$data['kevin_redirect_preferred'] = $this->request->post['kevin_redirect_preferred'];
 		} else {
-			$data['payment_kevin_redirect_preferred'] = $this->config->get('payment_kevin_redirect_preferred');
+			$data['kevin_redirect_preferred'] = $this->config->get('kevin_redirect_preferred');
 		}
 
-		if (isset($this->request->post['payment_kevin_total'])) {
-			$data['payment_kevin_total'] = $this->request->post['payment_kevin_total'];
+		if (isset($this->request->post['kevin_total'])) {
+			$data['kevin_total'] = $this->request->post['kevin_total'];
 		} else {
-			$data['payment_kevin_total'] = $this->config->get('payment_kevin_total'); 
+			$data['kevin_total'] = $this->config->get('kevin_total'); 
 		} 
 
-		$this->load->model('localisation/language');
-		
-		$languages = $this->model_localisation_language->getLanguages();
-
 		foreach ($languages as $language) {
-			if (isset($this->request->post['payment_kevin_title' . $language['language_id']])) {
-				$data['payment_kevin_title'][$language['language_id']] = $this->request->post['payment_kevin_title' . $language['language_id']];
+			if (isset($this->request->post['kevin_title' . $language['language_id']])) {
+				$data['kevin_title' . $language['language_id']] = $this->request->post['kevin_title' . $language['language_id']];
 			} else {
-				$data['payment_kevin_title'][$language['language_id']] = $this->config->get('payment_kevin_title' . $language['language_id']);
+				$data['kevin_title' . $language['language_id']] = $this->config->get('kevin_title' . $language['language_id']);
 			} 	
 		}
 		
 		// Image
-		if (isset($this->request->post['payment_kevin_image'])) {
-			$data['payment_kevin_image'] = $this->request->post['payment_kevin_image'];
+		if (isset($this->request->post['kevin_image'])) {
+			$data['kevin_image'] = $this->request->post['kevin_image'];
 		} else {
-			$data['payment_kevin_image'] = $this->config->get('payment_kevin_image');
+			$data['kevin_image'] = $this->config->get('kevin_image');
 		}
 		
-		if (isset($this->request->post['payment_kevin_image_height'])) {
-			$data['payment_kevin_image_height'] = $this->request->post['payment_kevin_image_height'];
+		if (isset($this->request->post['kevin_image_height'])) {
+			$data['kevin_image_height'] = $this->request->post['kevin_image_height'];
 		} else {
-			$data['payment_kevin_image_height'] = $this->config->get('payment_kevin_image_height');
+			$data['kevin_image_height'] = $this->config->get('kevin_image_height');
 		}
 		
-		if (isset($this->request->post['payment_kevin_image_width'])) {
-			$data['payment_kevin_image_width'] = $this->request->post['payment_kevin_image_width'];
+		if (isset($this->request->post['kevin_image_width'])) {
+			$data['kevin_image_width'] = $this->request->post['kevin_image_width'];
 		} else {
-			$data['payment_kevin_image_width'] = $this->config->get('payment_kevin_image_width');
+			$data['kevin_image_width'] = $this->config->get('kevin_image_width');
 		}
 
 		$this->load->model('tool/image');
 		
-		$image_width = !empty($this->config->get('payment_kevin_image_width')) ? $this->config->get('payment_kevin_image_width') : 64;
-		$image_height = !empty($this->config->get('payment_kevin_image_height')) ? $this->config->get('payment_kevin_image_height') : 64;
+		$image_width = !empty($this->config->get('kevin_image_width')) ? $this->config->get('kevin_image_width') : 64;
+		$image_height = !empty($this->config->get('kevin_image_height')) ? $this->config->get('kevin_image_height') : 64;
 
-		if (!empty($this->config->get('payment_kevin_image')) && is_file(DIR_IMAGE . $this->config->get('payment_kevin_image'))) {
-			$data['thumb'] = $this->model_tool_image->resize($this->config->get('payment_kevin_image'), $image_width, $image_height);
+		if (!empty($this->config->get('kevin_image')) && is_file(DIR_IMAGE . $this->config->get('kevin_image'))) {
+			$data['thumb'] = $this->model_tool_image->resize($this->config->get('kevin_image'), $image_width, $image_height);
 		} else {
 			$data['thumb'] = $this->model_tool_image->resize('no_image.png', 64, 64);
 		}
 
 		$data['placeholder'] = $this->model_tool_image->resize('no_image.png', 64, 64);
 		
-		if (isset($this->request->post['payment_kevin_position'])) {
-			$data['payment_kevin_position'] = $this->request->post['payment_kevin_position'];
+		if (isset($this->request->post['kevin_position'])) {
+			$data['kevin_position'] = $this->request->post['kevin_position'];
 		} else {
-			$data['payment_kevin_position'] = $this->config->get('payment_kevin_position');
+			$data['kevin_position'] = $this->config->get('kevin_position');
 		}
 		
-		if (isset($this->request->post['payment_kevin_bank_name_enabled'])) {
-			$data['payment_kevin_bank_name_enabled'] = $this->request->post['payment_kevin_bank_name_enabled'];
+		if (isset($this->request->post['kevin_bank_name_enabled'])) {
+			$data['kevin_bank_name_enabled'] = $this->request->post['kevin_bank_name_enabled'];
 		} else {
-			$data['payment_kevin_bank_name_enabled'] = $this->config->get('payment_kevin_bank_name_enabled');
+			$data['kevin_bank_name_enabled'] = $this->config->get('kevin_bank_name_enabled');
 		}
 		
 		$data['languages'] = $languages;
 		
 		foreach ($languages as $language) {
-			if (isset($this->request->post['payment_kevin_ititle' . $language['language_id']])) {
-				$data['payment_kevin_ititle'][$language['language_id']] = $this->request->post['payment_kevin_ititle' . $language['language_id']];
+			if (isset($this->request->post['kevin_ititle' . $language['language_id']])) {
+				$data['kevin_ititle' . $language['language_id']] = $this->request->post['kevin_ititle' . $language['language_id']];
 			} else {
-				$data['payment_kevin_ititle'][$language['language_id']] = $this->config->get('payment_kevin_ititle' . $language['language_id']);
+				$data['kevin_ititle' . $language['language_id']] = $this->config->get('kevin_ititle' . $language['language_id']);
 			} 	
 
-			if (isset($this->request->post['payment_kevin_instruction' . $language['language_id']])) {
-				$data['payment_kevin_instruction'][$language['language_id']] = $this->request->post['payment_kevin_instruction' . $language['language_id']];
+			if (isset($this->request->post['kevin_instruction' . $language['language_id']])) {
+				$data['kevin_instruction' . $language['language_id']] = $this->request->post['kevin_instruction' . $language['language_id']];
 			} else {
-				$data['payment_kevin_instruction'][$language['language_id']] = $this->config->get('payment_kevin_instruction' . $language['language_id']);
+				$data['kevin_instruction' . $language['language_id']] = $this->config->get('kevin_instruction' . $language['language_id']);
 			} 
 		}
 		
 		
-		if (isset($this->request->post['payment_kevin_geo_zone_id'])) {
-			$data['payment_kevin_geo_zone_id'] = $this->request->post['payment_kevin_geo_zone_id'];
+		if (isset($this->request->post['kevin_geo_zone_id'])) {
+			$data['kevin_geo_zone_id'] = $this->request->post['kevin_geo_zone_id'];
 		} else {
-			$data['payment_kevin_geo_zone_id'] = $this->config->get('payment_kevin_geo_zone_id'); 
+			$data['kevin_geo_zone_id'] = $this->config->get('kevin_geo_zone_id'); 
 		} 
 
 		$this->load->model('localisation/geo_zone');
 
 		$data['geo_zones'] = $this->model_localisation_geo_zone->getGeoZones();
 
-		if (isset($this->request->post['payment_kevin_status'])) {
-			$data['payment_kevin_status'] = $this->request->post['payment_kevin_status'];
+		if (isset($this->request->post['kevin_status'])) {
+			$data['kevin_status'] = $this->request->post['kevin_status'];
 		} else {
-			$data['payment_kevin_status'] = $this->config->get('payment_kevin_status');
+			$data['kevin_status'] = $this->config->get('kevin_status');
 		}
 		
-		if (isset($this->request->post['payment_kevin_log'])) {
-			$data['payment_kevin_log'] = $this->request->post['payment_kevin_log'];
+		if (isset($this->request->post['kevin_log'])) {
+			$data['kevin_log'] = $this->request->post['kevin_log'];
 		} else {
-			$data['payment_kevin_log'] = $this->config->get('payment_kevin_log');
+			$data['kevin_log'] = $this->config->get('kevin_log');
 		}
 
        $this->load->model('localisation/geo_zone');
@@ -261,34 +310,34 @@ class ControllerExtensionPaymentKevin extends Controller {
 
 		$data['order_statuses'] = $this->model_localisation_order_status->getOrderStatuses();
 		
-		if (isset($this->request->post['payment_kevin_started_status_id'])) {
-			$data['payment_kevin_started_status_id'] = $this->request->post['payment_kevin_started_status_id'];
+		if (isset($this->request->post['kevin_started_status_id'])) {
+			$data['kevin_started_status_id'] = $this->request->post['kevin_started_status_id'];
 		} else {
-			$data['payment_kevin_started_status_id'] = $this->config->get('payment_kevin_started_status_id');
+			$data['kevin_started_status_id'] = $this->config->get('kevin_started_status_id');
 		}
 
-		if (isset($this->request->post['payment_kevin_completed_status_id'])) {
-			$data['payment_kevin_completed_status_id'] = $this->request->post['payment_kevin_completed_status_id'];
+		if (isset($this->request->post['kevin_completed_status_id'])) {
+			$data['kevin_completed_status_id'] = $this->request->post['kevin_completed_status_id'];
 		} else {
-			$data['payment_kevin_completed_status_id'] = $this->config->get('payment_kevin_completed_status_id');
+			$data['kevin_completed_status_id'] = $this->config->get('kevin_completed_status_id');
 		}
 		
-		if (isset($this->request->post['payment_kevin_pending_status_id'])) {
-			$data['payment_kevin_pending_status_id'] = $this->request->post['payment_kevin_pending_status_id'];
+		if (isset($this->request->post['kevin_pending_status_id'])) {
+			$data['kevin_pending_status_id'] = $this->request->post['kevin_pending_status_id'];
 		} else {
-			$data['payment_kevin_pending_status_id'] = $this->config->get('payment_kevin_pending_status_id');
+			$data['kevin_pending_status_id'] = $this->config->get('kevin_pending_status_id');
 		}
 
-		if (isset($this->request->post['payment_kevin_failed_status_id'])) {
-			$data['payment_kevin_failed_status_id'] = $this->request->post['payment_kevin_failed_status_id'];
+		if (isset($this->request->post['kevin_failed_status_id'])) {
+			$data['kevin_failed_status_id'] = $this->request->post['kevin_failed_status_id'];
 		} else {
-			$data['payment_kevin_failed_status_id'] = $this->config->get('payment_kevin_failed_status_id');
+			$data['kevin_failed_status_id'] = $this->config->get('kevin_failed_status_id');
 		}
 
-		if (isset($this->request->post['payment_kevin_sort_order'])) {
-			$data['payment_kevin_sort_order'] = $this->request->post['payment_kevin_sort_order'];
+		if (isset($this->request->post['kevin_sort_order'])) {
+			$data['kevin_sort_order'] = $this->request->post['kevin_sort_order'];
 		} else {
-			$data['payment_kevin_sort_order'] = $this->config->get('payment_kevin_sort_order');
+			$data['kevin_sort_order'] = $this->config->get('kevin_sort_order');
 		}
 		
 		$data['header'] = $this->load->controller('common/header');
@@ -335,39 +384,35 @@ class ControllerExtensionPaymentKevin extends Controller {
 		$languages = $this->model_localisation_language->getLanguages();
 
 		foreach ($languages as $language) {
-			if (empty($this->request->post['payment_kevin_title' . $language['language_id']]) && empty($this->request->post['payment_kevin_image'])) {
+			if (empty($this->request->post['kevin_title' . $language['language_id']]) && empty($this->request->post['kevin_image'])) {
 				$this->error['title' . $language['language_id']] = $this->language->get('error_title');
 			}
 		}
-		/*
-		if (empty($this->request->post['payment_kevin_title' . $language['language_id']]) && empty($this->request->post['payment_kevin_image'])) {
-			$this->error['title_logo'] = $this->language->get('error_title_logo');
-		}
-		*/
 
-		if (empty($this->request->post['payment_kevin_client_id'])) {
+		if (empty($this->request->post['kevin_client_id'])) {
 			$this->error['client_id'] = $this->language->get('error_client_id');
 		}
 
-		if (empty($this->request->post['payment_kevin_client_secret'])) {
+		if (empty($this->request->post['kevin_client_secret'])) {
 			$this->error['client_secret'] = $this->language->get('error_client_secret');
 		}
 		
-		if (empty($this->request->post['payment_kevin_client_company'])) {
+		if (empty($this->request->post['kevin_client_company'])) {
 			$this->error['client_company'] = $this->language->get('error_client_company');
 		}
 	
-		if (!empty($this->request->post['payment_kevin_client_iban'])) {
-			$validate = $this->checkIBAN($this->request->post['payment_kevin_client_iban']);
+		if (!empty($this->request->post['kevin_client_iban'])) {
+			$validate = $this->checkIBAN($this->request->post['kevin_client_iban']);
 			if (!$validate) {
 				$this->error['client_iban_valid'] = $this->language->get('error_client_iban_valid');
 			}
 		}
 		
-		if (empty($this->request->post['payment_kevin_client_iban'])) {
+		if (empty($this->request->post['kevin_client_iban'])) {
 			$this->error['client_iban_empty'] = $this->language->get('error_client_iban_empty');
 		}
 		
 		return !$this->error;		
+	
 	}
 }

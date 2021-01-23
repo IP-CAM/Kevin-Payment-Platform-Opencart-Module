@@ -1,7 +1,7 @@
 <?php
 /*
-* 2020 Kevin. payment  for OpenCart v.3.0.x.x  
-* @version 0.1.3.13
+* 2020 Kevin payment  for OpenCart v.2.3.x.x  
+* @version 0.1.2.3
 *
 * NOTICE OF LICENSE
 *
@@ -20,17 +20,17 @@ class ModelExtensionPaymentKevin extends Model {
 		
 		$this->load->language('extension/payment/kevin');
 		require_once dirname(dirname(dirname(__DIR__))) . '/model/extension/payment/kevin/vendor/autoload.php';
-		$clientId = $this->config->get('payment_kevin_client_id');
-		$clientSecret = $this->config->get('payment_kevin_client_secret');
+		$clientId = $this->config->get('kevin_client_id');
+		$clientSecret = $this->config->get('kevin_client_secret');
 		$options = ['error' => 'array'];
 
 		$kevinClient = new Client($clientId, $clientSecret, $options);
 
-		$query = $this->db->query("SELECT * FROM " . DB_PREFIX . "zone_to_geo_zone WHERE geo_zone_id = '" . (int)$this->config->get('payment_kevin_geo_zone_id') . "' AND country_id = '" . (int)$address['country_id'] . "' AND (zone_id = '" . (int)$address['zone_id'] . "' OR zone_id = '0')");
+		$query = $this->db->query("SELECT * FROM " . DB_PREFIX . "zone_to_geo_zone WHERE geo_zone_id = '" . (int)$this->config->get('kevin_geo_zone_id') . "' AND country_id = '" . (int)$address['country_id'] . "' AND (zone_id = '" . (int)$address['zone_id'] . "' OR zone_id = '0')");
 
-		if ($this->config->get('payment_kevin_total') > $total) {
+		if ($this->config->get('kevin_total') > $total) {
 			$status = false;
-		} elseif (!$this->config->get('payment_kevin_geo_zone_id')) {
+		} elseif (!$this->config->get('kevin_geo_zone_id')) {
 			$status = true;
 		} elseif ($query->num_rows) {
 			$status = true;
@@ -48,33 +48,38 @@ class ModelExtensionPaymentKevin extends Model {
 			$status = true;
 		} else {
 			$status = false;
-		} 
+		}
 		
+		$query = $this->db->query("DESC `" . DB_PREFIX . "kevin_order` order_status_id");
+		if (!$query->num_rows) {
+			$this->db->query("ALTER TABLE `" . DB_PREFIX . "kevin_order` ADD `order_status_id` int(11) NOT NULL AFTER statusGroup ");
+		}
+
 		$method_data = array();
 		$this->load->model('localisation/language');
 		$current_language = $this->config->get('config_language_id') ;
-		if (!empty($this->config->get('payment_kevin_image_width'))) {
-			$logo_width = 'max-width:' . $this->config->get('payment_kevin_image_width') . 'px';
+		if (!empty($this->config->get('kevin_image_width'))) {
+			$logo_width = 'max-width:' . $this->config->get('kevin_image_width') . 'px';
 		} else {
 			$logo_width = 'width: auto';
 		}
-		if (!empty($this->config->get('payment_kevin_image_height'))) {
-			$logo_height = 'max-height: ' . $this->config->get('payment_kevin_image_height') . 'px;';
+		if (!empty($this->config->get('kevin_image_height'))) {
+			$logo_height = 'max-height: ' . $this->config->get('kevin_image_height') . 'px;';
 		} else {
 			$logo_height = 'height: auto;';
 		}
 		
 		
-		if (is_file(DIR_IMAGE . $this->config->get('payment_kevin_image'))) {
-			$kevin_image = '<img src="' . $this->config->get('config_url') . 'image/' . $this->config->get('payment_kevin_image') . '" title="' . $this->config->get('payment_kevin_title' . $current_language) . '" style="margin-top: -3px;' . $logo_height . $logo_width . '"/>&nbsp;&nbsp;';
+		if (is_file(DIR_IMAGE . $this->config->get('kevin_image'))) {
+			$kevin_image = '<img src="' . $this->config->get('config_url') . 'image/' . $this->config->get('kevin_image') . '" title="' . $this->config->get('kevin_title' . $current_language) . '" style="margin-top: -3px;' . $logo_height . $logo_width . '"/>&nbsp;&nbsp;';
 		} else {
 			$kevin_image = '';
 		}
 		
-		if ($this->config->get('payment_kevin_position') == 'right') {
-			$title =  $this->config->get('payment_kevin_title' . $current_language) . '&nbsp;&nbsp;' . $kevin_image;
+		if ($this->config->get('kevin_position') == 'right') {
+			$title =  $this->config->get('kevin_title' . $current_language) . '&nbsp;&nbsp;' . $kevin_image;
 		} else {
-			$title =  $kevin_image . $this->config->get('payment_kevin_title' . $current_language);
+			$title =  $kevin_image . $this->config->get('kevin_title' . $current_language);
 		}
 		
 		if ($status) {
@@ -82,37 +87,41 @@ class ModelExtensionPaymentKevin extends Model {
 				'code'       => 'kevin',
 				'title'      => $title,
 				'terms'      => '',
-				'sort_order' => $this->config->get('payment_kevin_sort_order')				
+				'sort_order' => $this->config->get('kevin_sort_order')				
 			);
 		}
 		return $method_data;
 	}
 
-	public function addKevinOrder($order_info, $init_payment, $ip_address) {
+	public function addKevinOrder($order_info, $init_payment, $ip_address, $order_status_id, $total) {
 		$this->db->query("INSERT INTO `" . DB_PREFIX . "kevin_order` SET 
-		`order_id` = '" . (int)$order_info['order_id'] . "',   
+		`order_id` = '" . (int)$order_info['order_id'] . "',
 		`payment_id` = '" . $this->db->escape($init_payment['id']) . "',
 		`status` = '" . $this->db->escape($init_payment['status']) . "',
 		`statusGroup` = '" . $this->db->escape($init_payment['statusGroup']) . "',
+		`order_status_id` = '" . (int)$order_status_id . "',
 		`ip_address` = '" . $this->db->escape($ip_address) . "',
-		`date_added` = now(), 
+		`date_added` = now(),
 		`date_modified` = now(), 
 		`currency_code` = '" . $this->db->escape($order_info['currency_code']) . "', 
-		`total` = '" . $this->currency->format($order_info['total'], $order_info['currency_code'], false, false) . "'");
+		`total` = '" . (float)$total . "'");
 	}
 
-	public function updateConfirmKevinOrder($payment_id, $payment_status) {
+
+	public function updateConfirmKevinOrder($payment_id, $payment_status, $order_status_id) {
 		$this->db->query("UPDATE `" . DB_PREFIX . "kevin_order` SET 
 		`status` = '" . $this->db->escape($payment_status['status']) . "',
 		`statusGroup` = '" . $this->db->escape($payment_status['group']) . "',
+		`order_status_id` = '" . (int)$order_status_id . "',
 		`date_modified` = now() 
          WHERE `payment_id` = '" . $this->db->escape($payment_id) . "'");
 	}
 	
-	public function updateWebhookKevinOrder($payment_id, $payment_status) {
+	public function updateWebhookKevinOrder($payment_id, $payment_status, $order_status_id) {
 		$this->db->query("UPDATE `" . DB_PREFIX . "kevin_order` SET 
 		`status` = '" . $this->db->escape($payment_status['status']) . "',
 		`statusGroup` = '" . $this->db->escape($payment_status['statusGroup']) . "',
+		`order_status_id` = '" . (int)$order_status_id . "',
 		`date_modified` = now() 
          WHERE `payment_id` = '" . $this->db->escape($payment_id) . "'");
 	}
@@ -126,5 +135,3 @@ class ModelExtensionPaymentKevin extends Model {
 		}
 	}
 }
-	
-

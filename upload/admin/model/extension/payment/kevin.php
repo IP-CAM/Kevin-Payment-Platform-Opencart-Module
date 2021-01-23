@@ -1,7 +1,7 @@
 <?php
 /*
-* 2020 Kevin. payment  for OpenCart v.3.0.x.x  
-* @version 0.1.3.13
+* 2020 Kevin payment  for OpenCart v.2.3.x.x  
+* @version 0.1.2.3
 *
 * NOTICE OF LICENSE
 *
@@ -17,7 +17,7 @@
 class ModelExtensionPaymentKevin extends Model {
 	
 	public function uninstall(){  
-		$this->db->query("DROP TABLE IF EXISTS `" . DB_PREFIX . "kevin_order`;");	
+		//$this->db->query("DROP TABLE IF EXISTS `" . DB_PREFIX . "kevin_order`;");	
 	}
     
 	public function install(){  
@@ -30,6 +30,11 @@ class ModelExtensionPaymentKevin extends Model {
 		//modify the length of the data type in the table column to display the payment method logo
 		$this->db->query("ALTER TABLE `" . DB_PREFIX . "order` MODIFY COLUMN `payment_method`	varchar(256) NOT NULL");
 		
+		$query = $this->db->query("DESC `" . DB_PREFIX . "kevin_order` order_status_id");
+		if (!$query->num_rows) {
+			$this->db->query("ALTER TABLE `" . DB_PREFIX . "kevin_order` ADD `order_status_id` int(11) NOT NULL AFTER statusGroup ");
+		}
+		
 		//$this->db->query("DROP TABLE IF EXISTS `" . DB_PREFIX . "kevin_order`;");
 		$this->db->query("
 		CREATE TABLE IF NOT EXISTS `" . DB_PREFIX . "kevin_order` (
@@ -41,6 +46,7 @@ class ModelExtensionPaymentKevin extends Model {
 		`total` DECIMAL( 10, 2 ) NOT NULL,
 		`status` varchar(10) DEFAULT NULL,
 		`statusGroup` varchar(10) DEFAULT NULL,
+		`order_status_id` int(11) NOT NULL,
 		`date_added` DATETIME NOT NULL,
 		`date_modified` DATETIME NOT NULL,
 		PRIMARY KEY (`kevin_order_id`),
