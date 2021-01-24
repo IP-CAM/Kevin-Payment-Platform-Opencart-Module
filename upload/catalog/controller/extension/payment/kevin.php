@@ -69,6 +69,8 @@ class ControllerExtensionPaymentKevin extends Controller {
 		
 		if (isset($banks['error']['code'])) {
 			$data['error_bank_missing'] = $banks['error']['description'] . ' Error code: ' . $banks['error']['code'] . '. Please try another payment method.';
+		} else {
+			$data['error_bank_missing'] = '';
 		}
 
 		$bank_ids = array();

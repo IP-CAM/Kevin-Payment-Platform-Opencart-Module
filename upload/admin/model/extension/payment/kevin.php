@@ -17,7 +17,7 @@
 class ModelExtensionPaymentKevin extends Model {
 	
 	public function uninstall(){  
-		$this->db->query("DROP TABLE IF EXISTS `" . DB_PREFIX . "kevin_order`;");	
+		//$this->db->query("DROP TABLE IF EXISTS `" . DB_PREFIX . "kevin_order`;");	
 	}
     
 	public function install(){  
