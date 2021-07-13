@@ -9,7 +9,7 @@
 
 ## Support
 
-Email: help@getkevin.eu
+Email: help@kevin.eu
 
 ## License
 
