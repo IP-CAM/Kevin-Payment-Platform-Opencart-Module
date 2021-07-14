@@ -1,7 +1,7 @@
 <?php
 /*
 * 2020 Kevin. payment  for OpenCart v.3.0.x.x  
-* @version 0.2.0.0
+* @version 0.2.0.7
 *
 * NOTICE OF LICENSE
 *
@@ -21,6 +21,7 @@ class ModelExtensionPaymentKevin extends Model {
 	}
     
 	public function install(){  
+
 		$this->db->query("
 		CREATE TABLE IF NOT EXISTS `" . DB_PREFIX . "kevin_order` (
 		`kevin_order_id` int(11) NOT NULL AUTO_INCREMENT,
