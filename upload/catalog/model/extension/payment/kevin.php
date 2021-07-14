@@ -1,7 +1,7 @@
 <?php
 /*
 * 2020 Kevin. payment  for OpenCart v.3.0.x.x  
-* @version 0.1.3.15
+* @version 0.2.0.7
 *
 * NOTICE OF LICENSE
 *
@@ -16,13 +16,23 @@
 */
 use Kevin\Client;
 class ModelExtensionPaymentKevin extends Model {
+	
+	private $lib_version = '0.3'; 
+	private $plugin_version = '0.2.0.7';
+	
 	public function getMethod($address, $total) {
 		
 		$this->load->language('extension/payment/kevin');
 		require_once dirname(dirname(dirname(__DIR__))) . '/model/extension/payment/kevin/vendor/autoload.php';
 		$clientId = $this->config->get('payment_kevin_client_id');
 		$clientSecret = $this->config->get('payment_kevin_client_secret');
-		$options = ['error' => 'array'];
+		$options = [
+			'error'                 => 'array',
+			'version'               => $this->lib_version,
+			'pluginVersion'         => $this->plugin_version,
+			'pluginPlatform'        => 'OpenCart',
+			'pluginPlatformVersion' => strval(VERSION)
+		];
 
 		$kevinClient = new Client($clientId, $clientSecret, $options);
 
@@ -50,11 +60,6 @@ class ModelExtensionPaymentKevin extends Model {
 			$status = false;
 		}
 		
-		$query = $this->db->query("DESC `" . DB_PREFIX . "kevin_order` order_status_id");
-		if (!$query->num_rows) {
-			$this->db->query("ALTER TABLE `" . DB_PREFIX . "kevin_order` ADD `order_status_id` int(11) NOT NULL AFTER statusGroup ");
-		}
-
 		$method_data = array();
 		$this->load->model('localisation/language');
 		$current_language = $this->config->get('config_language_id') ;
@@ -93,11 +98,24 @@ class ModelExtensionPaymentKevin extends Model {
 		return $method_data;
 	}
 
-	public function addKevinOrder($order_info, $init_payment, $ip_address, $order_status_id, $total) {
+	public function addKevinOrder($order_info, $init_payment, $ip_address, $order_status_id, $total, $payment_method, $bank_id) {
+		
+		if ($payment_method == 'card' && isset($init_payment['cardStatus'])) {
+			$kevin_payment_status = $init_payment['cardStatus'];
+		} else if ($payment_method == 'bank' && isset($init_payment['bankStatus'])) {
+			$kevin_payment_status = $init_payment['bankStatus'];
+		} else if (isset($init_payment['hybridStatus'])) {
+			$kevin_payment_status = $init_payment['hybridStatus'];
+		} else {
+			$kevin_payment_status = '';
+		}
+		
 		$this->db->query("INSERT INTO `" . DB_PREFIX . "kevin_order` SET 
 		`order_id` = '" . (int)$order_info['order_id'] . "',
 		`payment_id` = '" . $this->db->escape($init_payment['id']) . "',
-		`status` = '" . $this->db->escape($init_payment['status']) . "',
+		`bank_id` = '" . $this->db->escape($bank_id) . "',
+		`status` = '" . $this->db->escape($kevin_payment_status) . "',
+		`payment_method` = '" . $this->db->escape($payment_method) . "',
 		`statusGroup` = '" . $this->db->escape($init_payment['statusGroup']) . "',
 		`order_status_id` = '" . (int)$order_status_id . "',
 		`ip_address` = '" . $this->db->escape($ip_address) . "',
@@ -107,19 +125,40 @@ class ModelExtensionPaymentKevin extends Model {
 		`total` = '" . (float)$total . "'");
 	}
 
-
-	public function updateConfirmKevinOrder($payment_id, $payment_status, $order_status_id) {
+	public function updateConfirmKevinOrder($payment_id, $payment_status, $order_status_id, $payment_method) {
+		/**/
+		if ($payment_method == 'card' && isset($payment_status['cardStatus'])) {
+			$kevin_payment_status = $payment_status['cardStatus'];
+		} else if ($payment_method == 'bank' && isset($payment_status['bankStatus'])) {
+			$kevin_payment_status = $payment_status['bankStatus'];
+		} else if (isset($payment_status['hybridStatus'])) {
+			$kevin_payment_status = $payment_status['hybridStatus'];
+		} else {
+			$kevin_payment_status = 'conf';
+		}
+		
 		$this->db->query("UPDATE `" . DB_PREFIX . "kevin_order` SET 
-		`status` = '" . $this->db->escape($payment_status['status']) . "',
+		`status` = '" . $this->db->escape($kevin_payment_status) . "',
 		`statusGroup` = '" . $this->db->escape($payment_status['group']) . "',
 		`order_status_id` = '" . (int)$order_status_id . "',
 		`date_modified` = now() 
          WHERE `payment_id` = '" . $this->db->escape($payment_id) . "'");
 	}
 	
-	public function updateWebhookKevinOrder($payment_id, $payment_status, $order_status_id) {
+	public function updateWebhookKevinOrder($payment_id, $payment_status, $order_status_id, $payment_method) {
+		/**/
+		if ($payment_method == 'card' && isset($payment_status['cardStatus'])) {
+			$kevin_payment_status = $payment_status['cardStatus'];
+		} else if ($payment_method == 'bank' && isset($payment_status['bankStatus'])) {
+			$kevin_payment_status = $payment_status['bankStatus'];
+		} else if (isset($payment_status['hybridStatus'])) {
+			$kevin_payment_status = $payment_status['hybridStatus'];
+		} else {
+			$kevin_payment_status = 'whook';
+		}
+		
 		$this->db->query("UPDATE `" . DB_PREFIX . "kevin_order` SET 
-		`status` = '" . $this->db->escape($payment_status['status']) . "',
+		`status` = '" . $this->db->escape($kevin_payment_status) . "',
 		`statusGroup` = '" . $this->db->escape($payment_status['statusGroup']) . "',
 		`order_status_id` = '" . (int)$order_status_id . "',
 		`date_modified` = now() 

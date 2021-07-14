@@ -8,7 +8,7 @@
      <!-- <button type="button" class="close" data-dismiss="alert">&times;</button>-->
     </div>
 {% endif %}
-{% if text_error_currency %} 
+{% if error_currency %} 
 <div class="alert-currency"></div>  
 {% endif %}
 <div class="alert-bank"></div> 
@@ -18,20 +18,42 @@
 <div class="bank-container">
 	
 <ul class="list-unstyled row li-grid"> 
+{% for payment_method in payment_methods %}	
+{% if payment_method == 'bank' %}	
 {% for bank in banks %}
 	<li class="col-md-2 col-sm-4 col-xs-12 ">
     <p class="bank-grid">
-         <input type="image" src="{{ bank.imageUri }}" id="bank-selected" class="bank-{{ bank.id }} bank-logo bank-grid-img" onclick="SelectBank('{{ bank.id }}');"/>
+         <input type="image" src="{{ bank.imageUri }}" alt="{{ bank.name }}" title="{{ bank.name }}" id="bank-selected" class="payment-{{ bank.id }} bank-logo bank-grid-img img-responsive" onclick="selectPayment('{{ bank.id }}');"/>
 		{% if bank_name_enable %}
 		<span class="bankgrid-title title-color-{{ bank.id }}">{{ bank.name }}</span>
+		{% else %}
+		<span class="bankgrid-title title-color-{{ bank.id }}">&nbsp;</span>
 		{% endif %}
 	</p>
     </li>
-<form id="kevin_form-{{ bank.id }}" action="{{ action }}&bank={{ bank.id }}" enctype="multipart/form-data" method="POST">
-   <input  type="hidden" name="bank" value="{{ bank.id }}"/>
+
+<form id="kevin_form-{{ bank.id }}" action="{{ action }}&bankId={{ bank.id }}&payment_method={{ payment_method }}" enctype="multipart/form-data" method="POST">
+   <input  type="hidden" name="bankId" value="{{ bank.id }}"/>
 </form>
 {% endfor %}
-</ul>
+{% elseif payment_method == 'card' %}	
+	<li class="col-md-2 col-sm-4 col-xs-12 ">
+    <p class="card-grid">
+         <input type="image" src="{{ credit_card_icon }}" alt="Credit &#47; Debit carrd" title="Credit &#47; Debit carrd" id="card-selected" class="payment-card card-logo card-grid-img img-responsive" onclick="selectPayment('card');" />
+		{% if bank_name_enable %}
+		<span class="cardgrid-title title-color-card">{{ text_card_name }}</span>
+		{% else %}
+		<span class="bankgrid-title title-color-card">&nbsp;</span>
+		{% endif %}
+	</p>
+    </li>
+	<form id="kevin_form-{{ payment_method }}" action="{{ action }}&bankId={{ payment_method }}&payment_method={{ payment_method }}" enctype="multipart/form-data" method="POST">
+   <input  type="hidden" name="bankId" value="{{ payment_method }}"/>
+</form>
+{% endif %}
+{% endfor %}
+</ul>	
+
 </div>
 </div>
 <div class="buttons">
@@ -53,14 +75,14 @@
 		 
 	
 	var currency = '{{ currency ? currency : 0 }}';
-	var error_currency = '{{ text_error_currency ? text_error_currency : '' }}';
+	var error_currency = '{{ error_currency ? error_currency : '' }}';
 	var error_bank = '{{ error_bank ? error_bank : '' }}';
 	//$('#button-confirm, #quick-checkout-button-confirm').prop('disabled', true);
-	function SelectBank(bankId) {
+	function selectPayment(bankId) {
 		event.preventDefault();
-		$('.bankgrid-title').css({'color': ''});
-		$('.bank-logo').css({'border': ''});
-		$('.bank-' + bankId).css({'border': 'solid 2px #26a5d6'});
+		$('.bankgrid-title, .cardgrid-title').css({'color': ''});
+		$('.bank-logo, .card-logo').css({'border': ''});
+		$('.payment-' + bankId).css({'border': 'solid 2px #26a5d6'});
 		$('.title-color-' + bankId).css({'color': '#26a5d6'});
 		$('#button-confirm').attr('data-id', bankId);
 		//$('#button-confirm, #quick-checkout-button-confirm').prop('disabled', false);
@@ -108,8 +130,23 @@
     -webkit-transform: scale(1.02);
     transform: scale(1.02);
 }
+	
+.card-logo:hover {
+    border: solid 2px #dddddd; 
+    overflow: hidden;
+    moz-box-shadow: 0px 0px 8px 2px rgba(119,119,119,0.2);
+    -webkit-box-shadow: 0px 0px 8px 2px rgba(119,119,119,0.2);
+    box-shadow: 0px 0px 8px 2px rgba(119,119,119,0.2);
+    -webkit-transition: all .1s ease-in-out;
+    -moz-transition: all .1s ease-in-out;
+    -o-transition: all .1s ease-in-out;
+    -ms-transition: all .1s ease-in-out;
+    transition: all .1s ease-in-out;
+    -webkit-transform: scale(1.02);
+    transform: scale(1.02);
+}
 
-.bank-grid-img {
+.bank-grid-img, .card-grid-img {
 	display:block; 
 	max-width: 100%;
     height: auto;
@@ -117,7 +154,7 @@
 	margin-right:auto;
 }
 	
-.bankgrid-title {
+.bankgrid-title, .cardgrid-title {
 	text-align: center;
 	padding-top: 5px;
 	font-size: 14px;
@@ -129,7 +166,7 @@ input:focus{
     outline: none;
 }
 
-.bank-logo {
+.bank-logo, .card-logo {
 	display:block;
     margin:auto;
 	max-height: 100px; 
