@@ -1,7 +1,7 @@
 <?php
 /*
 * 2020 Kevin. payment  for OpenCart v.3.0.x.x  
-* @version 0.1.3.13
+* @version 0.2.0.6
 *
 * NOTICE OF LICENSE
 *
@@ -16,7 +16,12 @@
 */
 // Text
 $_['text_title']                           = 'Kevin';
-$_['text_order_info']                      = 'Order ID %s';
+$_['text_order_info']                      = 'Užsakymo ID %s';
+$_['text_card_name']                       = 'Keredito/Debeto kortelė';
+$_['text_kevin_payment_method']            = 'Mokėjimo būdas: %s';
+$_['text_status']                          = 'Užsakymo statusas: %s';
+$_['text_status_group']                    = 'Užsakymo statuso grupė: %s';
+$_['text_payment_id']                      = 'Mokėjimo ID: %s';
 
 //errors
 $_['error_currency']                       = 'Jei norite atsiskaityti šiuo mokėjimo būdu, pasirinkite valiutą  <strong>&euro;</strong>.';

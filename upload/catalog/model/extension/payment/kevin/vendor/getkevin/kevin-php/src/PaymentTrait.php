@@ -29,6 +29,10 @@ trait PaymentTrait
             $data['redirectPreferred'] = boolval(filter_var($attr['redirectPreferred'], FILTER_VALIDATE_BOOLEAN)) ? 'true' : 'false';
         }
 
+        if (isset($attr['paymentMethodPreferred'])) {
+            $data['paymentMethodPreferred'] = strval($attr['paymentMethodPreferred']);
+        }
+
         return $data;
     }
 
@@ -41,25 +45,62 @@ trait PaymentTrait
     private function getInitPaymentBodyAttr($attr)
     {
         $schema = [
-            'creditorName',
+            'creditorName' => '',
             'creditorAccount' => [
-                'iban',
-                'bban',
-                'sortCodeAccountNumber'
+                'iban' => '',
+                'bban' => '',
+                'sortCodeAccountNumber' => '',
             ],
             'debtorAccount' => [
-                'iban',
-                'bban',
-                'sortCodeAccountNumber'
+                'iban' => '',
+                'bban' => '',
+                'sortCodeAccountNumber' => '',
             ],
-            'amount',
-            'currencyCode',
-            'endToEndId',
-            'informationUnstructured',
-            'requestedExecutionDate',
+            'bankPaymentMethod' => [
+                'creditorName' => '',
+                'endToEndId' => '',
+                'informationStructured' => [
+                    'reference' => '',
+                ],
+                'creditorAccount' => [
+                    'iban' => '',
+                ]
+            ],
+            'cardPaymentMethod' => [
+                'cvc' => '',
+                'expMonth' => '',
+                'expYear' => '',
+                'number' => '',
+                'holderName' => '',
+            ],
+            'amount' => '',
+            'currencyCode' => '',
+            'description' => '',
+            'endToEndId' => '',
+            'informationUnstructured' => '',
+            'informationStructured' => [
+                'reference' => '',
+                'referenceType' => '',
+            ],
+            'requestedExecutionDate' => '',
             'identifier' => [
-                'email'
+                'email' => '',
             ]
+        ];
+
+        return $this->processSchemaAttributes($schema, $attr);
+    }
+
+    /**
+     * Extract body attributes used for init payment refund action.
+     *
+     * @param array $attr
+     * @return array
+     */
+    private function getInitPaymentRefundAttr($attr)
+    {
+        $schema = [
+            'amount' => '',
         ];
 
         return $this->processSchemaAttributes($schema, $attr);
@@ -73,12 +114,13 @@ trait PaymentTrait
      */
     private function getInitPaymentHeaderAttr($attr = [])
     {
-        $data = [];
-
         if (isset($attr['Authorization'])) {
-            $data[] = 'Authorization: ' . $this->unifyBearerToken($attr['Authorization']);
+            $data = array_merge(
+                ['Authorization: ' . $this->unifyBearerToken($attr['Authorization'])],
+                $this->buildPluginInformationHeader()
+            );
         } else {
-            $data = array_merge($this->buildHeader(), $data);
+            $data = $this->buildHeader();
         }
 
         if (isset($attr['Redirect-URL'])) {
@@ -106,6 +148,18 @@ trait PaymentTrait
             $data[] = 'PSU-IP-Address: ' . $attr['PSU-IP-Address'];
         }
 
+        if (in_array($this->getOption('version'), ['0.2', '0.3'])) {
+            if (isset($attr['PSU-IP-Port'])) {
+                $data[] = 'PSU-IP-Port: ' . $attr['PSU-IP-Port'];
+            }
+            if (isset($attr['PSU-User-Agent'])) {
+                $data[] = 'PSU-User-Agent: ' . $attr['PSU-User-Agent'];
+            }
+            if (isset($attr['PSU-Device-ID'])) {
+                $data[] = 'PSU-Device-ID: ' . $attr['PSU-Device-ID'];
+            }
+        }
+
         return $data;
     }
 
@@ -121,6 +175,35 @@ trait PaymentTrait
 
         if (isset($attr['PSU-IP-Address'])) {
             $data[] = 'PSU-IP-Address: ' . $attr['PSU-IP-Address'];
+        }
+
+        if (in_array($this->getOption('version'), ['0.2', '0.3'])) {
+            if (isset($attr['PSU-User-Agent'])) {
+                $data[] = 'PSU-User-Agent: ' . $attr['PSU-User-Agent'];
+            }
+            if (isset($attr['PSU-IP-Port'])) {
+                $data[] = 'PSU-IP-Port: ' . $attr['PSU-IP-Port'];
+            }
+            if (isset($attr['PSU-Device-ID'])) {
+                $data[] = 'PSU-Device-ID: ' . $attr['PSU-Device-ID'];
+            }
+        }
+
+        return $data;
+    }
+
+    /**
+     * Extract header attributes used for init payment refund action.
+     *
+     * @param array $attr
+     * @return array
+     */
+    private function getInitiatePaymentRefundHeaderAttr($attr = [])
+    {
+        $data = $this->buildHeader();
+
+        if (isset($attr['Webhook-URL'])) {
+            $data[] = 'Webhook-URL: ' . $attr['Webhook-URL'];
         }
 
         return $data;

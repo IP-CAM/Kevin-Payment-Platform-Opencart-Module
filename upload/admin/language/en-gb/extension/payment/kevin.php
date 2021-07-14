@@ -1,7 +1,7 @@
 <?php
 /*
 * 2020 Kevin. payment  for OpenCart v.3.0.x.x  
-* @version 0.1.3.13
+* @version 0.2.0.0
 *
 * NOTICE OF LICENSE
 *
@@ -39,7 +39,7 @@ $_['entry_image']                  = 'Payment Kevin Logo Image';
 $_['entry_image_height']           = 'Max Image Height in px';
 $_['entry_image_width']            = 'Max Image Width in px';
 $_['entry_position']               = 'Payment Logo Position';
-$_['entry_bank_name_enabled']      = 'Bank Name';
+$_['entry_bank_name_enabled']      = 'Bank/Card Name';
 $_['entry_kevin_title']            = 'Payment Method Title';
 $_['entry_instruction_title']      = 'Instruction Title';
 $_['entry_kevin_instruction']      = 'Instruction on the confirm step. HTML not supported';
@@ -61,12 +61,13 @@ $_['error_client_secret']          = 'Client Secret Required!';
 $_['error_client_company']         = 'Client Company Name Required!';
 $_['error_client_iban_empty']      = 'Client Account No. Required!';
 $_['error_client_iban_valid']      = 'Client Account No. not valid!';
+$_['error_bcmod']                  = 'Not possible validate Account No. because PHP Module "bcmath" are not installed on your server!  Please install "bcmath" module, or ask your server provider to install "bcmath" module.';
 $_['error_title']                  = 'Payment Title, or Payment logo Required!';
 
 // Help
 $_['help_iban_format']             = 'Account No. format For Lithuania should be two letters and 18 numbers. Example: LT599386327515536498.';
-$_['help_bank_name_enbl']          = 'Enable bank name on checkout page.';
-$_['help_bank_title']              = 'You can only add a bank logo instead of a Payment Method Title.';
+$_['help_bank_name_enbl']          = 'Enable bank/card name on checkout page.';
+$_['help_bank_title']              = 'You can only add a bank icon instead of a Payment Method Title.';
 $_['help_total']                   = 'The checkout total the order must reach before this payment method becomes active.';
 $_['help_log']                     = ' If enabled kevin_payment.log file you can find in you opencart instalation /storage/logs.';
 $_['help_width']                   = 'Set the payment logo image  max width in px for &quot;payment method&quot; in checkout payment step. Image height will be changed proportionally.';

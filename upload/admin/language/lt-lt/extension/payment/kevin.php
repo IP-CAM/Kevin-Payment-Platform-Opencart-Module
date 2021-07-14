@@ -1,7 +1,7 @@
 <?php
 /*
 * 2020 Kevin. payment  for OpenCart v.3.0.x.x  
-* @version 0.1.3.13
+* @version 0.2.0.0
 *
 * NOTICE OF LICENSE
 *
@@ -39,7 +39,7 @@ $_['entry_image']                  = 'Kevin Logotipas';
 $_['entry_image_height']           = 'Maksimalus logotipo aukštis px';
 $_['entry_image_width']            = 'Maksimalus logotipo plotis px';
 $_['entry_position']               = 'Logotipo vieta';
-$_['entry_bank_name_enabled']      = 'Bank pavadinimas';
+$_['entry_bank_name_enabled']      = 'Banko/kortelės pavadinimas';
 $_['entry_kevin_title']            = 'Mokėjimo būdo pavadinimas';
 $_['entry_instruction_title']      = 'Instrukcijos pavadinimas';
 $_['entry_kevin_instruction']      = 'Instrukcija užsakymo patvirtinimo žingsnyje. Nepalaiko HTML.';
@@ -61,12 +61,13 @@ $_['error_client_secret']          = 'Kliento slaptas kodas privalomas!';
 $_['error_client_company']         = 'Kliento įmonės pavadinimas privalomas!';
 $_['error_client_iban_empty']      = 'Kliento sąskaitos Nr. privalomas!';
 $_['error_client_iban_valid']      = 'Kliento sąskaitos Nr. Negalioja!';
+$_['error_bcmod']                  = 'Neįmanoma patvirtinti sąskaitos Nr., kadangi PHP Modulis "bcmath" nėra įdiegtas Jūsų serveryje! Idiekite "bcmath" modulį, arba paprašykite tai padaryti serverio administratoriaus.';
 $_['error_title']                  = 'Mokėjimo būdo pavadinimas, arba banko logotipas privalomas!';
 
 // Help
 $_['help_iban_format']             = 'Sąskaitos Nr. formatas Lietuvai turi būti dvi raidės ir 18 skaičių. Pvz: LT599386327515536498.';
-$_['help_bank_name_enbl']          = 'Rodyti galimų bankų pavadinimus atsiskaitymo puslapyje.';
-$_['help_bank_title']              = 'Vietoje mokėjimo būdo pavadinimo galite pridėti tik banko logotipą.';
+$_['help_bank_name_enbl']          = 'Rodyti bankų/kortelių pavadinimus atsiskaitymo puslapyje.';
+$_['help_bank_title']              = 'Vietoje mokėjimo būdo pavadinimo galite pridėti tik banko ikoną.';
 $_['help_total']                   = 'Atsiskaitymo suma, kada atsiskaitymo galimybė bus aktyvuota.';
 $_['help_log']                     = 'Jeigu Kevin įjungtas, kevin_payment.log failą rasite: /storage/logs.';
 $_['help_width']                   = 'Nustatykite maksimalų logotipo plotį px  &quot;Mokėjimo metodui&quot; atsiskaitymo mokėjimo pasirinkimo žingsnyje. Logotipo aukštis bus pakeistas proporcingai.';

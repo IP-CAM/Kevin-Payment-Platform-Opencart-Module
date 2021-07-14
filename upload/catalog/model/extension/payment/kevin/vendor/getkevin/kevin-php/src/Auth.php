@@ -35,7 +35,7 @@ class Auth implements AuthInterface, EndpointInterface
      */
     public function getCountries()
     {
-        $url = self::URL_COUNTRIES;
+        $url = $this->getEndpointUrl(self::PATH_COUNTRIES);
 
         $data = '';
 
@@ -56,7 +56,7 @@ class Auth implements AuthInterface, EndpointInterface
      */
     public function getBanks($attr = [])
     {
-        $url = self::URL_BANKS;
+        $url = $this->getEndpointUrl(self::PATH_BANKS);
 
         $queryData = $this->getBankQueryAttr($attr);
         if (count($queryData)) {
@@ -85,10 +85,54 @@ class Auth implements AuthInterface, EndpointInterface
     {
         $bankId = $this->escParam($bankId);
 
-        $url = $this->gluePath(self::URL_BANK, $bankId);
+        $url = $this->getEndpointUrl(self::PATH_BANK);
+        $url = $this->gluePath($url, $bankId);
 
         $data = '';
 
+        $header = array_merge($this->buildHeader(), $this->buildJsonHeader($data));
+
+        $response = $this->buildRequest($url, 'GET', $data, $header);
+
+        return $this->buildResponse($response);
+    }
+
+    /**
+     * API Method: Get supported bank by card number piece.
+     * @see: https://docs.getkevin.eu/public/platform/v0.3#operation/getBankByCardNumberPiece
+     *
+     * @param string $cardNumberPiece
+     * @return array
+     * @throws KevinException
+     */
+    public function getBankByCardNumberPiece($cardNumberPiece)
+    {
+        $cardNumberPiece = $this->escParam($cardNumberPiece);
+
+        $url = $this->getEndpointUrl(self::PATH_BANK_BY_CARD_NUMBER_PIECE);
+        $url = $this->gluePath($url, $cardNumberPiece);
+
+        $data = '';
+
+        $header = array_merge($this->buildHeader(), $this->buildJsonHeader($data));
+
+        $response = $this->buildRequest($url, 'GET', $data, $header);
+
+        return $this->buildResponse($response);
+    }
+
+    /**
+     * API Method: Get supported payment methods.
+     * @see https://docs.getkevin.eu/public/platform/v0.3#operation/getPaymentMethods
+     *
+     * @return array
+     * @throws KevinException
+     */
+    public function getPaymentMethods()
+    {
+        $url = $this->getEndpointUrl(self::PATH_PAYMENT_METHODS);
+
+        $data = '';
         $header = array_merge($this->buildHeader(), $this->buildJsonHeader($data));
 
         $response = $this->buildRequest($url, 'GET', $data, $header);
@@ -106,7 +150,7 @@ class Auth implements AuthInterface, EndpointInterface
      */
     public function auth($attr = [])
     {
-        $url = self::URL_AUTH;
+        $url = $this->getEndpointUrl(self::PATH_AUTH);
 
         $queryData = $this->getAuthQueryAttr($attr);
         if (count($queryData)) {
@@ -115,7 +159,8 @@ class Auth implements AuthInterface, EndpointInterface
         }
 
         $jsonData = $this->getAuthBodyAttr($attr);
-        $data = json_encode($jsonData);
+
+        $data = json_encode($jsonData, JSON_FORCE_OBJECT);
 
         $header = array_merge($this->getAuthHeaderAttr($attr), $this->buildJsonHeader($data));
 
@@ -148,7 +193,7 @@ class Auth implements AuthInterface, EndpointInterface
      */
     public function receiveToken($attr = [])
     {
-        $url = self::URL_RECEIVE_TOKEN;
+        $url = $this->getEndpointUrl(self::PATH_RECEIVE_TOKEN);
 
         $jsonData = $this->getReceiveTokenBodyAttr($attr);
         $data = json_encode($jsonData);
@@ -170,7 +215,7 @@ class Auth implements AuthInterface, EndpointInterface
      */
     public function refreshToken($attr = [])
     {
-        $url = self::URL_REFRESH_TOKEN;
+        $url = $this->getEndpointUrl(self::PATH_REFRESH_TOKEN);
 
         $jsonData = $this->getRefreshTokenBodyAttr($attr);
         $data = json_encode($jsonData);
@@ -192,7 +237,7 @@ class Auth implements AuthInterface, EndpointInterface
      */
     public function receiveTokenContent($attr = [])
     {
-        $url = self::URL_TOKEN_CONTENT;
+        $url = $this->getEndpointUrl(self::PATH_TOKEN_CONTENT);
 
         $data = '';
 
