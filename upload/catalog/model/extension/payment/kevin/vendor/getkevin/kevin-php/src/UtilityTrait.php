@@ -37,10 +37,34 @@ trait UtilityTrait
      */
     private function buildHeader()
     {
-        return [
+        $data = [
             'Client-Id: ' . $this->clientId,
-            'Client-Secret: ' . $this->clientSecret
+            'Client-Secret: ' . $this->clientSecret,
         ];
+
+        return array_merge($data, $this->buildPluginInformationHeader());
+    }
+
+    private function buildPluginInformationHeader() {
+        $data = [];
+
+        $pluginVersion = $this->getOption('pluginVersion');
+        $pluginPlatform = $this->getOption('pluginPlatform');
+        $pluginPlatformVersion = $this->getOption('pluginPlatformVersion');
+
+        if ($pluginVersion !== null) {
+            $data[] = 'Plugin-Version: ' . $pluginVersion;
+        }
+
+        if ($pluginPlatform !== null) {
+            $data[] = 'Plugin-Platform: ' . $pluginPlatform;
+        }
+
+        if ($pluginPlatformVersion !== null) {
+            $data[] = 'Plugin-Platform-Version: ' . $pluginPlatformVersion;
+        }
+
+        return $data;
     }
 
     /**
@@ -87,6 +111,10 @@ trait UtilityTrait
             $port = 80;
         }
 
+        if (preg_match('/(%[0-9A-F]{2})/', $jsonData)) {
+            $jsonData = urldecode($jsonData);
+        }
+
         $fp = fsockopen($prefix . $host, $port, $err_no, $err_str, 10);
         if (!$fp) {
 
@@ -105,7 +133,6 @@ trait UtilityTrait
         $data = array_merge($default_headers, $header);
         $data[] = "Connection: Close";
         $data[] = ""; // Separator
-
         if ($type === 'POST') {
             $data[] = "$jsonData\r\n";
         }
@@ -120,13 +147,12 @@ trait UtilityTrait
         }
         fclose($fp);
 
-        $asd = explode("\r\n\r\n", $response, 2);
+        $parts = explode("\r\n\r\n", $response, 2);
 
-        $header = trim($asd[0]);
-        $result = trim($asd[1]);
+        $header = trim($parts[0]);
+        $result = trim($parts[1]);
 
         $header = explode("\r\n", $header);
-
         $code = -1;
         foreach ($header as $value) {
             if (substr($value, 0, 4) === 'HTTP') {
@@ -172,8 +198,9 @@ trait UtilityTrait
 
         if ($is_error) {
             $error = $response['error'];
+            $data = isset($response['data']) ? $response['data'] : null;
 
-            return $this->returnFailure($error['description'], $error['code'], $error['name']);
+            return $this->returnFailure($error['description'], $error['code'], $error['name'], $data);
         }
 
         return $response;
@@ -242,24 +269,7 @@ trait UtilityTrait
      */
     private function processSchemaAttributes(array $schema, array $attr)
     {
-        $data = [];
-
-        foreach ($schema as $item => $value) {
-            if (is_string($value)) {
-                if (isset($attr[$value])) {
-                    $data[$value] = strval($attr[$value]);
-                }
-            } else if (is_array($value)) {
-                foreach ($value as $sub_value) {
-                    if (isset($attr[$item][$sub_value])) {
-                        $data[$item] = [];
-                        $data[$item][$sub_value] = strval($attr[$item][$sub_value]);
-                    }
-                }
-            }
-        }
-
-        return $data;
+        return $this->intersectArrayRecursively($attr, $schema);
     }
 
     /**
@@ -268,22 +278,18 @@ trait UtilityTrait
      * @param string $message
      * @param int $code
      * @param string $name
+     * @param string|null $data
      * @return array[]
      * @throws KevinException
      */
-    private function returnFailure($message = '', $code = -1, $name = 'Exception')
+    private function returnFailure($message = '', $code = -1, $name = 'Exception', $data = null)
     {
         switch ($this->options['error']) {
-            case 'exception':
-                throw new KevinException($message, $code);
-
-                break;
             case 'array':
-                $response = ['error' => ['code' => $code, 'name' => $name, 'description' => $message], 'data' => []];
-
+                $response = ['error' => ['code' => $code, 'name' => $name, 'description' => $message], 'data' => $data];
                 break;
             default:
-                throw new KevinException($message, $code);
+                throw new KevinException($message, $code, null, $data);
         }
 
         return $response;
@@ -309,11 +315,29 @@ trait UtilityTrait
      */
     private function processOptionsAttributes(array $options)
     {
-        $data = ['error' => 'exception'];
+        $data = [
+            'error' => 'exception',
+            'version' => '0.3'
+        ];
 
         $option_error = ['exception', 'array'];
         if (isset($options['error']) && in_array($options['error'], $option_error)) {
             $data['error'] = $options['error'];
+        }
+
+        $option_version = ['0.1', '0.2', '0.3'];
+        if (isset($options['version']) && in_array($options['version'], $option_version)) {
+            $data['version'] = $options['version'];
+        }
+
+        if (isset($options['pluginVersion'])) {
+            $data['pluginVersion'] = $options['pluginVersion'];
+        }
+        if (isset($options['pluginPlatform'])) {
+            $data['pluginPlatform'] = $options['pluginPlatform'];
+        }
+        if (isset($options['pluginPlatformVersion'])) {
+            $data['pluginPlatformVersion'] = $options['pluginPlatformVersion'];
         }
 
         return $data;
@@ -345,5 +369,70 @@ trait UtilityTrait
 
             throw new KevinException('ClientID and ClientSecret are required.');
         }
+    }
+
+    /**
+     * @param string $option
+     * @return mixed|null
+     */
+    private function getOption($option)
+    {
+        return isset($this->options[$option]) ? $this->options[$option] : null;
+    }
+
+    /**
+     * @return string
+     */
+    private function getBaseUrl()
+    {
+        $version = $this->getOption('version');
+
+        switch ($version) {
+            case '0.1':
+                $base_url = self::BASE_URL_V01;
+                break;
+            case '0.2':
+                $base_url = self::BASE_URL_V02;
+                break;
+            case '0.3':
+                $base_url = self::BASE_URL_V03;
+                break;
+            default:
+                $base_url = self::BASE_URL_V02;
+        }
+
+        return $base_url;
+    }
+
+    /**
+     * @param string $path
+     * @return string
+     */
+    private function getEndpointUrl($path = '')
+    {
+        return $this->getBaseUrl() . $path;
+    }
+
+    /**
+     * @param array $master
+     * @param array $mask
+     * @return array
+     */
+    private function intersectArrayRecursively($master, $mask)
+    {
+        if (!is_array($master)) {
+            return $master;
+        }
+
+        foreach ($master as $k => $v) {
+            if (!isset($mask[$k])) {
+                unset ($master[$k]);
+                continue;
+            }
+            if (is_array($mask[$k])) {
+                $master[$k] = $this->intersectArrayRecursively($master[$k], $mask[$k]);
+            }
+        }
+        return $master;
     }
 }

@@ -1,7 +1,7 @@
 <?php
 /*
-* 2020 Kevin payment  for OpenCart v.2.3.x.x  
-* @version 0.1.2.0
+* 2020 Kevin. payment  for OpenCart v.2.3.x.x  
+* @version 0.2.0.3
 *
 * NOTICE OF LICENSE
 *
@@ -10,14 +10,18 @@
 * It is also available through the world-wide-web at this URL:
 * http://opensource.org/licenses/afl-3.0.php
 * 
-*  @author 2020 kevin. <info@getkevin.eu>
+*  @author 2021 kevin. <info@getkevin.eu>
 *  @copyright kevin.
 *  @license http://opensource.org/licenses/afl-3.0.php Academic Free License (AFL 3.0)
 */
 // Text
 $_['text_title']                           = 'Kevin';
 $_['text_order_info']                      = 'Order ID %s';
-$_['text_loading']                         = 'Loading...';
+$_['text_card_name']                       = 'Credit/Debit Card';
+$_['text_kevin_payment_method']            = 'Payment Method: %s';
+$_['text_status']                          = 'Order Status: %s';
+$_['text_status_group']                    = 'Order Status Group: %s';
+$_['text_payment_id']                      = 'Payment ID: %s';
 
 //errors
 $_['error_currency']                       = 'Only &euro; currency are allowed for this payment method. Please select a currency <strong>&euro;</strong>.';
