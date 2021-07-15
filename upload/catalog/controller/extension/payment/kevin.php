@@ -445,7 +445,7 @@ class ControllerExtensionPaymentKevin extends Controller {
 		}
 		
 		$payment_id = $get_payment_status['id'];
-		
+		require_once dirname(dirname(dirname(__DIR__))) . '/model/extension/payment/kevin/vendor/autoload.php';
 		$clientId = $this->config->get('payment_kevin_client_id');
 		$clientSecret = $this->config->get('payment_kevin_client_secret');
 		$options = [
