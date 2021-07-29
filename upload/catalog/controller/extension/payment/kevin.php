@@ -1,7 +1,7 @@
 <?php
 /*
 * 2020 Kevin. payment  for OpenCart v.3.0.x.x  
-* @version 0.2.0.7
+* @version 0.2.0.8
 *
 * NOTICE OF LICENSE
 *
@@ -20,7 +20,7 @@ class ControllerExtensionPaymentKevin extends Controller {
     private $type = 'payment';
     private $name = 'kevin';
 	private $lib_version = '0.3'; 
-	private $plugin_version = '0.2.0.7';
+	private $plugin_version = '0.2.0.8';
 	
     public function index() {	
 	//	date_default_timezone_set('Europe/Vilnius');		
@@ -491,7 +491,7 @@ class ControllerExtensionPaymentKevin extends Controller {
             $order_id = 0;
 			$payment_method = '';
 			$this->KevinLog('An error occurred. The order have been deleted from database.');
-			$die();
+			die();
         }
 
 		$order_info = $this->model_checkout_order->getOrder($order_id);
