@@ -514,7 +514,7 @@ class ControllerExtensionPaymentKevin extends Controller {
             $order_id = 0;
 			$payment_method = '';
 			$this->KevinLog('An error occurred. The order have been dleted from database.');
-			$die();
+			die();
         }
 
 		$order_info = $this->model_checkout_order->getOrder($order_id);
