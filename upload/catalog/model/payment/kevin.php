@@ -1,7 +1,7 @@
 <?php
 /*
 * 2020 Kevin. payment  for OpenCart v.2.0.x.x - v.2.2.x.x
-* @version 0.1.0.3
+* @version 0.1.0.4
 *
 * NOTICE OF LICENSE
 *
@@ -18,7 +18,7 @@ use Kevin\Client;
 class ModelPaymentKevin extends Model {
 	
 	private $lib_version = '0.3'; 
-	private $plugin_version = '0.1.0.3';
+	private $plugin_version = '0.1.0.4';
 	
 	public function getMethod($address, $total) {
 		
@@ -159,7 +159,7 @@ class ModelPaymentKevin extends Model {
 		
 		$this->db->query("UPDATE `" . DB_PREFIX . "kevin_order` SET 
 		`status` = '" . $this->db->escape($kevin_payment_status) . "',
-		`statusGroup` = '" . $this->db->escape($payment_status['statusGroup']) . "',
+		`statusGroup` = '" . $this->db->escape($payment_status['group']) . "',
 		`order_status_id` = '" . (int)$order_status_id . "',
 		`date_modified` = now() 
          WHERE `payment_id` = '" . $this->db->escape($payment_id) . "'");
