@@ -1,7 +1,7 @@
 <?php
 /*
 * 2020 Kevin payment  for OpenCart v.2.3.x.x  
-* * @version 0.2.1.0
+* @version 0.2.1.1
 *
 * NOTICE OF LICENSE
 *
@@ -27,7 +27,7 @@ class ControllerExtensionPaymentKevin extends Controller {
 	}
 */	
 	public function index() {
-
+		$this->load->model('extension/payment/kevin');
         $this->load->language('extension/payment/kevin');
 
 		$this->document->setTitle($this->language->get('heading_title'));

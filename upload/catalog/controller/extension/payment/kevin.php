@@ -1,7 +1,7 @@
 <?php
 /*
 * 2020 Kevin. payment  for OpenCart v.2.3.x.x  
-* @version 0.2.1.0
+* @version 0.2.1.1
 *
 * NOTICE OF LICENSE
 *
@@ -20,7 +20,7 @@ class ControllerExtensionPaymentKevin extends Controller {
     private $type = 'payment';
     private $name = 'kevin';
 	private $lib_version = '0.4'; 
-	private $plugin_version = '0.2.1.0';
+	private $plugin_version = '0.2.1.1';
 	
     public function index() {	
 	//	date_default_timezone_set('Europe/Vilnius');		
