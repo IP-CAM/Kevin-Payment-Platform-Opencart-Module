@@ -1,7 +1,7 @@
 <?php
 /*
 * 2020 Kevin. payment  for OpenCart v.3.0.x.x  
-* @version 0.2.0.0
+* @version 0.2.1.3
 *
 * NOTICE OF LICENSE
 *
@@ -29,9 +29,10 @@ class ControllerExtensionPaymentKevin extends Controller {
 	public function index() {
 
         $this->load->language('extension/payment/kevin');
+		$this->load->model('extension/payment/kevin');
 
 		$this->document->setTitle($this->language->get('heading_title'));
-
+		
 		$this->load->model('setting/setting');
 
 		if (($this->request->server['REQUEST_METHOD'] == 'POST') && $this->validate()) {
@@ -40,6 +41,12 @@ class ControllerExtensionPaymentKevin extends Controller {
 			$this->session->data['success'] = $this->language->get('text_success');
 
 			$this->response->redirect($this->url->link('marketplace/extension', 'user_token=' . $this->session->data['user_token'] . '&type=payment', true));
+		}
+		
+		$DB_query = $this->model_extension_payment_kevin->checkKevinDB();
+		
+		if ($DB_query) {
+			$this->model_extension_payment_kevin->install();
 		}
 
 		$data['heading_title'] = $this->language->get('heading_title');
