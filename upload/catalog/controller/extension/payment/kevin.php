@@ -1,7 +1,7 @@
 <?php
 /*
 * 2020 Kevin. payment  for OpenCart v.2.3.x.x  
-* @version 0.2.0.5
+* @version 0.2.1.0
 *
 * NOTICE OF LICENSE
 *
@@ -19,8 +19,8 @@ class ControllerExtensionPaymentKevin extends Controller {
 
     private $type = 'payment';
     private $name = 'kevin';
-	private $lib_version = '0.3'; 
-	private $plugin_version = '0.2.0.5';
+	private $lib_version = '0.4'; 
+	private $plugin_version = '0.2.1.0';
 	
     public function index() {	
 	//	date_default_timezone_set('Europe/Vilnius');		
@@ -204,8 +204,18 @@ class ControllerExtensionPaymentKevin extends Controller {
             $vendor_logo = '';
         }
 		//('<img src="' . $vendor_logo . '" style="height: 32px width: auto;" />')
-		$confirm_url = $this->url->link('extension/payment/kevin/confirm');
-        $webhook_url = $this->url->link('extension/payment/kevin/webhook');
+		//$confirm_url = $this->url->link('extension/payment/kevin/confirm');
+        //$webhook_url = $this->url->link('extension/payment/kevin/webhook');
+		
+		$protocol = strtolower(substr($_SERVER["SERVER_PROTOCOL"], 0, 5)) == 'https'?'https':'http';
+		
+		if ($protocol == 'https') {
+			$confirm_url = HTTPS_SERVER . 'index.php?route=extension/payment/kevin/confirm';
+        	$webhook_url = HTTPS_SERVER . 'index.php?route=extension/payment/kevin/webhook';
+		} else {
+			$confirm_url = HTTP_SERVER . 'index.php?route=extension/payment/kevin/confirm';
+        	$webhook_url = HTTP_SERVER . 'index.php?route=extension/payment/kevin/webhook';
+		}
 		
 		if (!empty($this->config->get('kevin_redirect_preferred') && $this->config->get('kevin_redirect_preferred') == 1)) {
 			$redirect_preferred = true;
@@ -340,11 +350,18 @@ class ControllerExtensionPaymentKevin extends Controller {
         } elseif (isset($_POST['paymentId'])) {
             $payment_id = $_POST['paymentId'];
         } else {
-            $payment_id = '';
+            $payment_id = 0;
 			$log_data = 'On the order confirm Payment ID not received from Kevin\'s server!';
         }
 		
-		if (!$payment_id) {
+		if (isset($this->request->get['statusGroup'])) {
+            $statusGroup = $this->request->get['statusGroup'];
+        } else {
+            $statusGroup = false;
+			$log_data = 'On the order confirm/redirect statusGroup not received from Kevin\'s server!';
+        }
+		
+		if (!$payment_id || !$statusGroup) {
 			$this->KevinLog($log_data);
 			$this->session->data['error'] = $this->language->get('error_kevin_payment_id');
 			$this->response->redirect($this->url->link('checkout/cart'));
@@ -365,84 +382,47 @@ class ControllerExtensionPaymentKevin extends Controller {
         }
 		
 		$order_info = $this->model_checkout_order->getOrder($order_id);
-		
+		/*
 		$ip_address = $order_info['ip'];
 		$payment_status_attr = ['PSU-IP-Address' => $ip_address];
 		$get_payment_status = $kevinClient->payment()->getPaymentStatus($payment_id, $payment_status_attr);
+		*/
 
-		switch ($get_payment_status['group']) {
-			case 'started':
-				$new_status_id = $this->config->get('kevin_started_status_id');
-				$new_status = $get_payment_status['group'];
-				break;
+		switch ($statusGroup) {
 			case 'pending':
 				$new_status_id = $this->config->get('kevin_pending_status_id'); 
-				$new_status = $get_payment_status['group'];
+				$new_status = $statusGroup;
 				break;
 			case 'completed':
 				$new_status_id = $this->config->get('kevin_completed_status_id');
-				$new_status = $get_payment_status['group'];
+				$new_status = $statusGroup;
 				break;
 			case 'failed':
 				$new_status_id = $this->config->get('kevin_failed_status_id');
-				$new_status = $get_payment_status['group'];
+				$new_status = $statusGroup;
 				break;
 			default:
 				$new_status_id = null;
-				$new_status = $get_payment_status['group'];
+				$new_status = $statusGroup;
 		}
 
 		if (!$new_status_id) {
-			$this->session->data['error'] = 'An error occurred. On response not received any status group.' . $get_payment_status['error']['code'] . ' ' . $get_payment_status['error']['description'];
+			$this->session->data['error'] = 'An error occurred. On response not received any statusGroup.';
 			$this->KevinLog($this->session->data['error']);
 			$this->response->redirect($this->url->link('checkout/cart'));
 		}
 		
 		/*log*/
 		$log_data = 'Answer on Confirm Kevin... Payment Method: ' . $payment_method . '; Payment ID: ' . $payment_id . '; Order ID: ' . $order_info['order_id'] . '; Payment Status: ' . $new_status  . '.';
-		
-		if ($old_status_id != $new_status_id && $order_info['order_id'] == $this->session->data['order_id']) {
-			$this->KevinLog($log_data);
-			$this->model_extension_payment_kevin->updateConfirmKevinOrder($payment_id, $get_payment_status, $new_status_id, $payment_method);
-			$payment_status = true;
-		} else {
-			$payment_status = false;
-		}
-		
-		/*validate order*/
-		$order_query = $this->model_extension_payment_kevin->getKevinOrders($payment_id);
-		
-		if (!empty($order_query['bank_id']) && $order_query['bank_id'] != 'card') {
-			$bank_id = ' (' . $order_query['bank_id'] . ')';
-		} else {
-			$bank_id = '';
-		}
 
-		$comment = sprintf($this->language->get('text_kevin_payment_method'), ucfirst($order_query['payment_method'])) . $bank_id . "\n";
-		$comment .= sprintf($this->language->get('text_status'),  ucfirst($order_query['status'])) . "\n";
-		$comment .= sprintf($this->language->get('text_status_group'),  ucfirst($order_query['statusGroup'])) . "\n";
-		$comment .= sprintf($this->language->get('text_payment_id'),  $order_query['payment_id']);
-
-        if ($new_status == 'completed') {
-            $order_status_id = $this->config->get('kevin_completed_status_id');
-			if ($payment_status) {
-				$this->model_checkout_order->addOrderHistory($order_id, $order_status_id, $comment, true);
-			}	
+        if ($new_status == 'completed') {	
 			$this->response->redirect($this->url->link('checkout/success'));
 		} else if ($new_status == 'pending') {
-			$order_status_id = $this->config->get('kevin_pending_status_id');
-			if ($payment_status) {
-				$this->model_checkout_order->addOrderHistory($order_id, $order_status_id, $comment, true);
-			}
 			$this->response->redirect($this->url->link('checkout/success'));
         } else if ($new_status == 'failed') {
-			$order_status_id = $this->config->get('kevin_failed_status_id');
-			if ($payment_status) {
-				$this->model_checkout_order->addOrderHistory($order_id, $order_status_id, $comment, true);
-			}
 			$this->response->redirect($this->url->link('checkout/failure'));
         } else {
-			$this->session->data['error'] = $this->language->get('error_kevin_payment') . $get_payment_status['error']['code'] . ' ' . $get_payment_status['error']['description'];
+			$this->session->data['error'] = $this->language->get('error_kevin_payment');
 			$this->response->redirect($this->url->link('checkout/cart'));
 		}
     }
@@ -453,12 +433,18 @@ class ControllerExtensionPaymentKevin extends Controller {
         $this->load->model('checkout/order');
         $this->load->model('extension/payment/kevin');
 		
-		$webhook_data = file_get_contents('php://input');
+		$webhook_data_file = file('php://input');
 		
-		$this->KevinLog('Answer from Kevin on Webhook:' . $webhook_data);//rasom i log ka gaunam is webhook
+		$this->session->data['webhook_data'] = file_get_contents('php://input');
+		
+		$webhook_data = $this->session->data['webhook_data'];
 		
 		if ($webhook_data !== false && !empty($webhook_data)) {
+			$this->KevinLog('Answer from Kevin on Webhook:' . $webhook_data);//rasom i log ka gaunam is webhook
 			$get_payment_status = json_decode($webhook_data, true);
+		} else if (!empty($webhook_data_file)) {
+			$this->KevinLog('Answer from Kevin on Webhook:' . $webhook_data_file[0]);//rasom i log ka gaunam is webhook
+			$get_payment_status = json_decode($webhook_data_file[0], true);
 		} else {
 			$this->KevinLog('Payment status not received from the remote server!');
 			die();
@@ -570,6 +556,8 @@ class ControllerExtensionPaymentKevin extends Controller {
 		$comment .= sprintf($this->language->get('text_status'),  ucfirst($order_query['status'])) . "\n";
 		$comment .= sprintf($this->language->get('text_status_group'),  ucfirst($order_query['statusGroup'])) . "\n";
 		$comment .= sprintf($this->language->get('text_payment_id'),  $order_query['payment_id']);
+		
+		unset($this->session->data['webhook_data']);
 
 		if  ($new_status == 'completed' && $payment_status){
 			$order_status_id = $this->config->get('kevin_completed_status_id');
@@ -584,6 +572,7 @@ class ControllerExtensionPaymentKevin extends Controller {
 			$this->model_checkout_order->addOrderHistory($order_id, $order_status_id, $comment, true);
 
 		} 
+		
     }
 		
 	/*log*/

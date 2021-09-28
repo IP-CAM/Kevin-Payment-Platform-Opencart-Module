@@ -1,7 +1,7 @@
 <?php
 /*
 * 2020 Kevin. payment  for OpenCart v.3.0.x.x  
-* @version 0.2.0.0
+** @version 0.2.1.0
 *
 * NOTICE OF LICENSE
 *
@@ -63,5 +63,17 @@ class ModelExtensionPaymentKevin extends Model {
 			$this->db->query("ALTER TABLE `" . DB_PREFIX . "kevin_order` ADD `bank_id` varchar(32) DEFAULT NULL AFTER payment_id ");
 		}
 
+	}
+	
+	public function checkKevinDB() {
+		$query_status = $this->db->query("DESC `" . DB_PREFIX . "kevin_order` order_status_id");
+		$query_method = $this->db->query("DESC `" . DB_PREFIX . "kevin_order` payment_method");
+		$query_bank = $this->db->query("DESC `" . DB_PREFIX . "kevin_order` bank_id");
+		
+		if (!$query_status->num_rows || !$query_method->num_rows || !$query_bank->num_rows) {
+			return true;
+		} else {
+			return false;
+		}
 	}
 }

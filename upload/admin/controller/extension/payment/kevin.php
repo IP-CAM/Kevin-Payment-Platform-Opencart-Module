@@ -1,7 +1,7 @@
 <?php
 /*
 * 2020 Kevin payment  for OpenCart v.2.3.x.x  
-* @version 0.1.2.3
+* * @version 0.2.1.0
 *
 * NOTICE OF LICENSE
 *
@@ -40,6 +40,13 @@ class ControllerExtensionPaymentKevin extends Controller {
 			$this->session->data['success'] = $this->language->get('text_success');
 
 			$this->response->redirect($this->url->link('extension/extension', 'token=' . $this->session->data['token'] . '&type=payment', true));
+		}
+		
+		//checking if kevin DB is updated on module update/reinstall.
+		$DB_query = $this->model_extension_payment_kevin->checkKevinDB();
+		
+		if ($DB_query) {
+			$this->model_extension_payment_kevin->install();
 		}
 		
 		$data['heading_title'] = $this->language->get('heading_title');
