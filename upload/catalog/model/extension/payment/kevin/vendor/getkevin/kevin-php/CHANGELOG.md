@@ -1,6 +1,13 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [0.14.3] - 2021-09-20
+- Fixes a bug when Client-Id/Client-Secret is not passed when using Bearer token
+- Updated domain from getkevin.eu to kevin.eu
+
+## [0.14.2] - 2021-06-21
+- Added support for 500, 502, 503 and 504 error codes.
+
 ## [0.14.1] - 2021-04-28
 - Added query parameter paymentMethodPreferred to init payment endpoint
 

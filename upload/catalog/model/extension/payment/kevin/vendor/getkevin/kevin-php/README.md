@@ -31,7 +31,7 @@ require('vendor/autoload.php');
 
 > Parameter names and response data match those defined in API documentation.
 
-> Detailed API documentation can be found <a href="https://docs.getkevin.eu/public/platform" target="_blank">here</a>.
+> Detailed API documentation can be found <a href="https://docs.kevin.eu/public/platform" target="_blank">here</a>.
 
 ### Initialization
 
@@ -84,7 +84,7 @@ $attr = [
     'redirectPreferred' => 'false',
     'scopes' => 'payments',
     'Request-Id' => 'your-guid',
-    'Redirect-URL' => 'https://redirect.getkevin.eu/authorization.html'
+    'Redirect-URL' => 'https://redirect.kevin.eu/authorization.html'
 ];
 $response = $kevinClient->auth()->authenticate($attr);
 ```
@@ -118,9 +118,11 @@ $response = $kevinClient->auth()->receiveTokenContent($attr);
 
 ### 2.1 Initiate bank payment
 
+:exclamation: _Take a note that the example below is for the v0.3 only. The v0.1 and v0.2 requires a slightly different body._
+
 ```
 $attr = [
-    'Redirect-URL' => 'https://redirect.getkevin.eu/payment.html',
+    'Redirect-URL' => 'https://redirect.kevin.eu/payment.html',
     'description' => 'Test',
     'currencyCode' => 'EUR',
     'amount' => '0.01',
@@ -139,7 +141,7 @@ $response = $kevinClient->payment()->initPayment($attr);
 
 ```
 $attr = [
-    'Redirect-URL' => 'https://redirect.getkevin.eu/payment.html',
+    'Redirect-URL' => 'https://redirect.kevin.eu/payment.html',
     'description' => 'Test',
     'currencyCode' => 'EUR',
     'amount' => '0.01',
@@ -158,7 +160,7 @@ $response = $kevinClient->payment()->initPayment($attr);
 
 ```
 $attr = [
-    'Redirect-URL' => 'https://redirect.getkevin.eu/payment.html',
+    'Redirect-URL' => 'https://redirect.kevin.eu/payment.html',
     'description' => 'Test',
     'currencyCode' => 'EUR',
     'amount' => '0.01',
@@ -208,9 +210,9 @@ $response = $kevinClient->payment()->getPaymentRefunds($paymentId);
 
 ## Support
 
-Email: support@getkevin.eu
+Email: help@kevin.eu
 
 ## License
 
 - **[MIT license](http://opensource.org/licenses/mit-license.php)**
-- Copyright© 2020 <a href="https://www.getkevin.eu/" target="_blank">kevin.</a>
+- Copyright© 2020 <a href="https://www.kevin.eu/" target="_blank">kevin.</a>

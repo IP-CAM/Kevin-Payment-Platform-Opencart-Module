@@ -1,7 +1,7 @@
 <?php
 /*
 * 2020 Kevin. payment  for OpenCart v.3.0.x.x  
-* @version 0.2.0.6
+* @version 0.2.1.3
 *
 * NOTICE OF LICENSE
 *
@@ -22,7 +22,6 @@ $_['text_kevin_payment_method']            = 'Payment Method: %s';
 $_['text_status']                          = 'Order Status: %s';
 $_['text_status_group']                    = 'Order Status Group: %s';
 $_['text_payment_id']                      = 'Payment ID: %s';
-
 
 //errors
 $_['error_currency']                       = 'Only &euro; currency are allowed for this payment method. Please select a currency <strong>&euro;</strong>.';
