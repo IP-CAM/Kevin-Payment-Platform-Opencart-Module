@@ -1,7 +1,7 @@
 <?php
 /*
 * 2020 Kevin. payment  for OpenCart v.2.0.x.x - v.2.2.x.x
-* @version 0.1.0.5
+* @version 0.1.0.6
 *
 * NOTICE OF LICENSE
 *
@@ -20,7 +20,7 @@ class ControllerPaymentKevin extends Controller {
     private $type = 'payment';
     private $name = 'kevin';
 	private $lib_version = '0.4'; 
-	private $plugin_version = '0.1.0.5';
+	private $plugin_version = '0.1.0.6';
 	
     public function index() {	
 	//	date_default_timezone_set('Europe/Vilnius');	
@@ -205,14 +205,12 @@ class ControllerPaymentKevin extends Controller {
 		//$confirm_url = $this->url->link('payment/kevin/confirm');
         //$webhook_url = $this->url->link('payment/kevin/webhook');
 		
-		$protocol = strtolower(substr($_SERVER["SERVER_PROTOCOL"], 0, 5)) == 'https'?'https':'http';
-		
-		if ($protocol == 'https') {
-			$confirm_url = HTTPS_SERVER . 'index.php?route=extension/payment/kevin/confirm';
-        	$webhook_url = HTTPS_SERVER . 'index.php?route=extension/payment/kevin/webhook';
+		if (!empty($_SERVER['HTTPS']) || $_SERVER['HTTPS'] == 1) {
+			$confirm_url = HTTPS_SERVER . 'index.php?route=payment/kevin/confirm';
+        	$webhook_url = HTTPS_SERVER . 'index.php?route=payment/kevin/webhook';
 		} else {
-			$confirm_url = HTTP_SERVER . 'index.php?route=extension/payment/kevin/confirm';
-        	$webhook_url = HTTP_SERVER . 'index.php?route=extension/payment/kevin/webhook';
+			$confirm_url = HTTP_SERVER . 'index.php?route=payment/kevin/confirm';
+        	$webhook_url = HTTP_SERVER . 'index.php?route=payment/kevin/webhook';
 		}
 		
 		if (!empty($this->config->get('kevin_redirect_preferred') && $this->config->get('kevin_redirect_preferred') == 1)) {
