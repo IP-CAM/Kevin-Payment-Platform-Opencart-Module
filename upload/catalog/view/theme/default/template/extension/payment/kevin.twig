@@ -73,13 +73,18 @@
 		}
 	}
 		 
-	
+	$(document).ready(function(){
+
+		$("#bank-selected, #card-selected").click(function(event) {
+			event.preventDefault(); 
+		});
+	});
+
 	var currency = '{{ currency ? currency : 0 }}';
 	var error_currency = '{{ error_currency ? error_currency : '' }}';
 	var error_bank = '{{ error_bank ? error_bank : '' }}';
 	//$('#button-confirm, #quick-checkout-button-confirm').prop('disabled', true);
 	function selectPayment(bankId) {
-		event.preventDefault();
 		$('.bankgrid-title, .cardgrid-title').css({'color': ''});
 		$('.bank-logo, .card-logo').css({'border': ''});
 		$('.payment-' + bankId).css({'border': 'solid 2px #26a5d6'});
@@ -88,6 +93,7 @@
 		//$('#button-confirm, #quick-checkout-button-confirm').prop('disabled', false);
 		$('.alert-bank').children().eq(0).remove();
 		$('#quick-checkout-button-confirm').button('reset');
+		return false;
 	}
 	$('#button-confirm').on('click', function() {
 		$('.alert-currency').children().eq(0).remove();
